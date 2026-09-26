@@ -1,7 +1,7 @@
 """Persistence layer: SQLite locally, PostgreSQL (Neon/Render) in the cloud."""
+import re
 import sqlite3
 from contextlib import contextmanager
-from pathlib import Path
 
 from .config import DATABASE_PATH, IS_POSTGRES
 from . import pgcompat
@@ -252,17 +252,31 @@ def insert_id(conn, sql: str, params: tuple = ()) -> int:
     return int(cur.lastrowid)
 
 
+_IDENT_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
+
+
+def _check_ident(name: str) -> str:
+    """Guard SQL identifiers used in dynamically-built statements."""
+    if not _IDENT_RE.match(name):
+        raise ValueError(f"Invalid SQL identifier: {name!r}")
+    return name
+
+
 def insert_rows(conn, table: str, columns: list[str], rows: list[tuple],
                 chunk: int = 300) -> None:
     """Batch insert using multi-row VALUES — one round-trip per `chunk` rows.
 
     Critical for cloud databases (Neon pooler ≈ 0.2 s per round-trip).
+    Table/column names are validated identifiers; values are always bound.
     """
     if not rows:
         return
+    _check_ident(table)
+    for c in columns:
+        _check_ident(c)
     mark = "%s" if IS_POSTGRES else "?"
     row_ph = "(" + ",".join([mark] * len(columns)) + ")"
-    head = f"INSERT INTO {table} ({','.join(columns)}) VALUES "
+    head = f"INSERT INTO {table} ({','.join(columns)}) VALUES "  # nosec B608 - validated identifiers, values bound
     raw = getattr(conn, "execute_raw", conn.execute)
     for i in range(0, len(rows), chunk):
         part = rows[i:i + chunk]

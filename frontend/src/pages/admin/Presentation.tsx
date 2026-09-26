@@ -37,7 +37,7 @@ export default function Presentation() {
         <h1 className="mt-3 text-center font-display text-4xl font-bold leading-tight md:text-5xl">
           Digitizing India's <span className="text-brand-400">Informal Recycling</span> Ecosystem
         </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-[14px] text-white/55">
+        <p className="mx-auto mt-3 max-w-2xl text-center text-[14px] text-white/75">
           Connecting Waste. Empowering People. Building a Circular Future.
         </p>
 
@@ -55,7 +55,7 @@ export default function Presentation() {
               style={{ animationDelay: `${i * 0.08}s` }}>
               <s.icon size={22} className={`mx-auto ${s.tone}`} />
               <p className={`num mt-3 font-display text-3xl font-bold ${s.tone}`}>{s.value}</p>
-              <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-white/45">{s.label}</p>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-white/65">{s.label}</p>
             </div>
           ))}
         </div>
@@ -63,7 +63,7 @@ export default function Presentation() {
         {/* Flow */}
         <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
           <h2 className="mb-1 text-center font-display text-lg font-bold">The Connected Chain</h2>
-          <p className="mb-4 text-center text-[12px] text-white/45">
+          <p className="mb-4 text-center text-[12px] text-white/65">
             Household → AI Estimate → Collector → Recycling → Impact (demo data, kg)
           </p>
           <FlowDiagram

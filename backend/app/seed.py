@@ -6,7 +6,7 @@ Run:  python backend/run.py --seed [--fresh]
 import random
 from datetime import datetime, timedelta
 
-from .config import DEMO_CITY_CENTER, IS_POSTGRES
+from .config import IS_POSTGRES
 from .database import db, init_db, insert_id, insert_rows
 from .security import hash_password
 from .services.catalog import MATERIALS
@@ -27,13 +27,13 @@ CAT_POOL = ["paper", "cardboard", "plastic", "metal", "glass", "e-waste", "mixed
 
 def seed(fresh: bool = False) -> None:
     init_db()
-    random.seed(26229)
+    random.seed(26229)  # nosec B311 - deterministic demo data, not security
     with db() as conn:
         if fresh and not IS_POSTGRES:
             for table in ["route_assignments", "impact_records", "ratings", "notifications",
                           "transactions", "pickup_items", "pickup_requests", "recycling_centers",
                           "collector_locations", "recyclers", "collectors", "waste_items", "users"]:
-                conn.execute(f"DROP TABLE IF EXISTS {table}")
+                conn.execute(f"DROP TABLE IF EXISTS {table}")  # nosec B608 - fixed internal table list
             init_db()
 
         if IS_POSTGRES:
@@ -132,17 +132,17 @@ def seed(fresh: bool = False) -> None:
             lat, lng = jitter(zlat, zlng, 0.015)
             user_rows.append((person, email, pw, "collector", rand_phone(),
                               rand_address(zone), zone, lat, lng))
-            mats = random.sample(
+            mats = random.sample(  # nosec B311 - deterministic demo data, not security
                 ["Paper", "Plastic", "Metal", "Cardboard", "E-waste", "Glass"],
-                k=random.randint(3, 6))
+                k=random.randint(3, 6))  # nosec B311 - deterministic demo data, not security
             profile_rows.append({
                 "email": email, "biz": biz, "rating": float_between(4.0, 5.0, 1),
-                "pickups": random.randint(120, 1300), "kg": float_between(900, 4200, 0),
+                "pickups": random.randint(120, 1300), "kg": float_between(900, 4200, 0),  # nosec B311 - deterministic demo data, not security
                 "earn": float_between(18000, 95000, 0),
-                "verified": 1 if random.random() > 0.08 else 0,
-                "vehicle": random.choice(VEHICLES),
-                "available": 1 if random.random() > 0.25 else 0,
-                "mats": ",".join(mats), "eta": random.randint(12, 40),
+                "verified": 1 if random.random() > 0.08 else 0,  # nosec B311 - deterministic demo data, not security
+                "vehicle": random.choice(VEHICLES),  # nosec B311 - deterministic demo data, not security
+                "available": 1 if random.random() > 0.25 else 0,  # nosec B311 - deterministic demo data, not security
+                "mats": ",".join(mats), "eta": random.randint(12, 40),  # nosec B311 - deterministic demo data, not security
                 "lat": lat, "lng": lng, "zone": zone,
             })
         insert_rows(conn, "users", ["name", "email", "password_hash", "role", "phone",
@@ -174,8 +174,8 @@ def seed(fresh: bool = False) -> None:
                 "INSERT INTO users (name, email, password_hash, role, phone, address, zone,"
                 " lat, lng) VALUES (?,?,?,?,?,?,?,?,?)",
                 (name, email, pw, "recycler", rand_phone(),
-                 f"Plot {random.randint(2, 60)}, GIDC Phase-II, Ahmedabad",
-                 random.choice(ZONES)[0], 22.99, 72.64))
+                 f"Plot {random.randint(2, 60)}, GIDC Phase-II, Ahmedabad",  # nosec B311 - deterministic demo data, not security
+                 random.choice(ZONES)[0], 22.99, 72.64))  # nosec B311 - deterministic demo data, not security
             conn.execute(
                 "INSERT INTO recyclers (user_id, facility_name, capacity_tons) VALUES (?,?,?)",
                 (rid, name, float_between(40, 150, 0)))
@@ -184,18 +184,18 @@ def seed(fresh: bool = False) -> None:
         # Pickup history — 3 batched passes instead of ~5,000 round-trips.
         statuses = (["completed"] * 975 + ["pending"] * 90 + ["accepted"] * 55 +
                     ["on_the_way"] * 45 + ["collected"] * 43 + ["cancelled"] * 40)
-        random.shuffle(statuses)
+        random.shuffle(statuses)  # nosec B311 - deterministic demo data, not security
 
         pickup_rows = []   # pickup_requests tuples
         item_rows = []     # (code, category, weight, actual|None, rate)
         tx_rows = []       # transactions tuples
         for i, status in enumerate(statuses):
-            cust_id, clat, clng, zone = random.choice(customer_ids)
+            cust_id, clat, clng, zone = random.choice(customer_ids)  # nosec B311 - deterministic demo data, not security
             created = START_DATE + timedelta(
-                days=random.randint(0, 115), hours=random.randint(7, 19),
-                minutes=random.randint(0, 59))
+                days=random.randint(0, 115), hours=random.randint(7, 19),  # nosec B311 - deterministic demo data, not security
+                minutes=random.randint(0, 59))  # nosec B311 - deterministic demo data, not security
             code = f"KC-2026-{1000 + i:05d}"
-            cats = random.sample(CAT_POOL, k=random.randint(1, 3))
+            cats = random.sample(CAT_POOL, k=random.randint(1, 3))  # nosec B311 - deterministic demo data, not security
             est_weight = float_between(4, 45, 1)
             est_min = float_between(80, 900, 0)
             est_max = round(est_min * 1.2, 0)
@@ -204,14 +204,14 @@ def seed(fresh: bool = False) -> None:
             accepted_at = completed_at = actual_w = final_v = None
             payment = None
             if status != "pending":
-                col_id = random.choice(collector_ids)[0]
-                accepted_at = (created + timedelta(minutes=random.randint(5, 90))).isoformat(" ")
+                col_id = random.choice(collector_ids)[0]  # nosec B311 - deterministic demo data, not security
+                accepted_at = (created + timedelta(minutes=random.randint(5, 90))).isoformat(" ")  # nosec B311 - deterministic demo data, not security
             if status in ("collected", "completed"):
-                actual_w = round(est_weight * random.uniform(0.85, 1.15), 1)
+                actual_w = round(est_weight * random.uniform(0.85, 1.15), 1)  # nosec B311 - deterministic demo data, not security
             if status == "completed":
-                completed_at = (created + timedelta(hours=random.randint(2, 30))).isoformat(" ")
+                completed_at = (created + timedelta(hours=random.randint(2, 30))).isoformat(" ")  # nosec B311 - deterministic demo data, not security
                 final_v = float_between(90, 1400, 2)
-                payment = random.choice(PAYMENTS)
+                payment = random.choice(PAYMENTS)  # nosec B311 - deterministic demo data, not security
 
             pickup_rows.append((code, cust_id, col_id, status, rand_address(zone), zone,
                                 clat, clng, est_weight, actual_w, est_min, est_max,
@@ -272,21 +272,21 @@ def seed(fresh: bool = False) -> None:
         def _id(r):
             return r["id"] if not isinstance(r, dict) else r.get("id")
 
-        chosen = [_id(r) for r in random.sample(list(completed_rows), min(90, len(list(completed_rows))))]
+        chosen = [_id(r) for r in random.sample(list(completed_rows), min(90, len(list(completed_rows))))]  # nosec B311 - deterministic demo data, not security
         marks = ",".join("?" * len(chosen))
-        conn.execute(f"UPDATE pickup_requests SET collector_id=? WHERE id IN ({marks})",
+        conn.execute(f"UPDATE pickup_requests SET collector_id=? WHERE id IN ({marks})",  # nosec B608 - placeholders only, values bound
                      (demo_col, *chosen))
-        conn.execute(f"UPDATE transactions SET collector_id=? WHERE pickup_id IN ({marks})",
+        conn.execute(f"UPDATE transactions SET collector_id=? WHERE pickup_id IN ({marks})",  # nosec B608 - placeholders only, values bound
                      (demo_col, *chosen))
 
         cust_rows = conn.execute(
             "SELECT id FROM pickup_requests WHERE status='completed' AND customer_id<>? LIMIT 100",
             (demo_cust,)).fetchall()
-        cchosen = [_id(r) for r in random.sample(list(cust_rows), min(6, len(list(cust_rows))))]
+        cchosen = [_id(r) for r in random.sample(list(cust_rows), min(6, len(list(cust_rows))))]  # nosec B311 - deterministic demo data, not security
         cmarks = ",".join("?" * len(cchosen))
-        conn.execute(f"UPDATE pickup_requests SET customer_id=? WHERE id IN ({cmarks})",
+        conn.execute(f"UPDATE pickup_requests SET customer_id=? WHERE id IN ({cmarks})",  # nosec B608 - placeholders only, values bound
                      (demo_cust, *cchosen))
-        conn.execute(f"UPDATE transactions SET customer_id=? WHERE pickup_id IN ({cmarks})",
+        conn.execute(f"UPDATE transactions SET customer_id=? WHERE pickup_id IN ({cmarks})",  # nosec B608 - placeholders only, values bound
                      (demo_cust, *cchosen))
 
         # Two live pickups on the demo collector's route (tracking + route demo).
@@ -339,12 +339,12 @@ def seed(fresh: bool = False) -> None:
             "SELECT id, customer_id, collector_id FROM pickup_requests WHERE status='completed'"
             " LIMIT 400").fetchall()
         for r in rated:
-            if random.random() < 0.7:
+            if random.random() < 0.7:  # nosec B311 - deterministic demo data, not security
                 conn.execute(
                     "INSERT INTO ratings (pickup_id, customer_id, collector_id, stars, comment)"
                     " VALUES (?,?,?,?,?)",
                     (_id(r), r["customer_id"], r["collector_id"],
-                     random.choice([4, 5, 5, 5, 4, 3]), "Smooth pickup, fair price."))
+                     random.choice([4, 5, 5, 5, 4, 3]), "Smooth pickup, fair price."))  # nosec B311 - deterministic demo data, not security
 
     print(f"Seeded demo database: {N_CUSTOMERS} customers, {N_COLLECTORS} collectors, "
           f"{N_RECYCLERS} recyclers, {N_PICKUPS} pickups, {N_CENTERS} recycling centers.")

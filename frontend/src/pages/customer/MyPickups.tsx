@@ -70,7 +70,7 @@ export default function MyPickups() {
                   <td className="td num text-[13px]">{(p.actual_weight || p.estimated_weight || 0).toFixed(1)} kg</td>
                   <td className="td num text-[13px] font-medium">{p.final_value ? formatINR(p.final_value) : p.estimated_value_min ? `~${formatINR(p.estimated_value_min)}` : '—'}</td>
                   <td className="td"><StatusBadge status={p.status} /></td>
-                  <td className="td"><Link to={`/app/pickups/${p.id}`} className="text-[12.5px] font-semibold text-brand-600 hover:underline">View</Link></td>
+                  <td className="td"><Link to={`/app/pickups/${p.id}`} className="text-[12.5px] font-semibold text-brand-700 hover:underline">View</Link></td>
                 </tr>
               ))}
             </tbody>

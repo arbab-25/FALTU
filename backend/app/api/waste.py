@@ -1,6 +1,4 @@
 """Waste intelligence endpoints: catalog, estimation and demo AI analysis."""
-import os
-
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from ..config import ALLOWED_IMAGE_TYPES, DEMO_NOTE, MAX_UPLOAD_BYTES, UPLOAD_DIR

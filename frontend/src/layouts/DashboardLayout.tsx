@@ -161,7 +161,7 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
 
-        <footer className="border-t border-neutral-200 bg-white px-4 py-4 text-center text-[11.5px] text-neutral-400 lg:px-8">
+        <footer className="border-t border-neutral-200 bg-white px-4 py-4 text-center text-[11.5px] text-neutral-500 lg:px-8">
           Kabadiwala Connect · SIH26229 prototype · All figures are demo data
         </footer>
       </div>

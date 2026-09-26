@@ -5,9 +5,6 @@ called here. For the SIH prototype no external calls are made; the demo
 engine in waste_classifier.py is always used so the demo never depends on
 network access or credentials.
 """
-from .waste_classifier import analyze_image  # re-export
-
-
 def get_classifier():
     """Returns the active classifier callable.
 

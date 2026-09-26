@@ -51,7 +51,7 @@ export default function Receipt({ data }: { data: ReceiptData }) {
       <div className="bg-ink px-6 py-5 text-center text-white">
         <p className="text-[11px] font-bold tracking-[0.28em] text-brand-300">RECEIPT</p>
         <p className="font-display text-lg font-bold">{data.brand}</p>
-        <p className="mt-0.5 text-[11px] text-white/60">Connecting Waste. Empowering People.</p>
+        <p className="mt-0.5 text-[11px] text-white/75">Connecting Waste. Empowering People.</p>
       </div>
 
       <div className="px-6 py-5">

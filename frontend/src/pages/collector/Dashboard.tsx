@@ -48,7 +48,7 @@ export default function CollectorDashboard() {
         <div className="card p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-[16px] font-bold text-ink">New Pickup Requests</h2>
-            <Link to="/app/requests" className="text-[13px] font-semibold text-brand-600 hover:underline">View all</Link>
+            <Link to="/app/requests" className="text-[13px] font-semibold text-brand-700 hover:underline">View all</Link>
           </div>
           {!pending ? (
             <div className="space-y-2">{[1, 2].map((i) => <div key={i} className="skeleton h-20" />)}</div>
@@ -80,7 +80,7 @@ export default function CollectorDashboard() {
           <div className="card p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-display text-[16px] font-bold text-ink">Active Pickups</h2>
-              <Link to="/app/active" className="text-[13px] font-semibold text-brand-600 hover:underline">Manage <ArrowRight size={12} className="inline" /></Link>
+              <Link to="/app/active" className="text-[13px] font-semibold text-brand-700 hover:underline">Manage <ArrowRight size={12} className="inline" /></Link>
             </div>
             {!active ? (
               <div className="skeleton h-16" />

@@ -231,7 +231,6 @@ def complete_pickup(pid: int, body: PickupComplete,
         total_weight = 0.0
         total_value = 0.0
         for item in body.items:
-            meta = MATERIALS.get(item.category, MATERIALS["other"])
             conn.execute(
                 "INSERT INTO pickup_items (pickup_id, category, estimated_weight, actual_weight,"
                 " rate_per_kg, amount) VALUES (?,?,?,?,?,?)",

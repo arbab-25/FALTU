@@ -1,5 +1,5 @@
 """Admin + recycler + presentation endpoints."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from ..database import db, row_dict
 from ..deps import get_current_user, require_roles

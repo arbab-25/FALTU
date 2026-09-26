@@ -1,7 +1,7 @@
 """Deterministic demo data generators (seeded random) for Ahmedabad."""
 import random
 
-random.seed(26229)
+random.seed(26229)  # nosec B311 - deterministic demo data, not security
 
 FIRST_NAMES = [
     "Aarav", "Vihaan", "Anaya", "Diya", "Ishaan", "Kavya", "Arjun", "Meera",
@@ -49,25 +49,27 @@ STREET_NAMES = [
 
 
 def rand_name() -> str:
-    return f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
+    return f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"  # nosec B311 - deterministic demo data, not security
 
 
 def rand_zone() -> tuple[str, float, float]:
-    return random.choice(ZONES)
+    return random.choice(ZONES)  # nosec B311 - deterministic demo data, not security
 
 
 def rand_address(zone: str) -> str:
-    return f"{random.randint(1, 250)} {random.choice(STREET_NAMES)}, {zone}, Ahmedabad"
+    return f"{random.randint(1, 250)} {random.choice(STREET_NAMES)}, {zone}, Ahmedabad"  # nosec B311 - deterministic demo data, not security
 
 
 def jitter(lat: float, lng: float, spread: float = 0.02) -> tuple[float, float]:
-    return round(lat + random.uniform(-spread, spread), 5), \
-        round(lng + random.uniform(-spread, spread), 5)
+    """Deterministic demo jitter (not a security primitive)."""
+    lat2 = round(lat + random.uniform(-spread, spread), 5)  # nosec B311
+    lng2 = round(lng + random.uniform(-spread, spread), 5)  # nosec B311
+    return lat2, lng2
 
 
 def rand_phone() -> str:
-    return f"+91 9{random.randint(100000000, 999999999)}"
+    return f"+91 9{random.randint(100000000, 999999999)}"  # nosec B311 - deterministic demo data, not security
 
 
 def float_between(lo: float, hi: float, nd: int = 1) -> float:
-    return round(random.uniform(lo, hi), nd)
+    return round(random.uniform(lo, hi), nd)  # nosec B311 - deterministic demo data, not security

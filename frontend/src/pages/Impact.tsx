@@ -62,7 +62,7 @@ export default function Impact() {
               <div className="mt-10 grid gap-6 lg:grid-cols-2">
                 <div className="card p-6">
                   <h3 className="font-display text-lg font-bold text-ink">Recycled weight by material</h3>
-                  <p className="mb-4 text-[12px] text-neutral-400">Demo data · kg</p>
+                  <p className="mb-4 text-[12px] text-neutral-500">Demo data · kg</p>
                   <div className="h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={data.by_material.map((m) => ({ name: m.category, kg: Math.round(m.weight) }))}>
@@ -109,7 +109,7 @@ export default function Impact() {
                       <p className="mt-1 text-[12.5px] text-ink-soft">{l}</p>
                     </div>
                   ))}
-                  <p className="col-span-full text-[11px] text-neutral-400">Demo data — SIH26229 prototype, not verified figures.</p>
+                  <p className="col-span-full text-[11px] text-neutral-500">Demo data — SIH26229 prototype, not verified figures.</p>
                 </div>
               )}
             </>

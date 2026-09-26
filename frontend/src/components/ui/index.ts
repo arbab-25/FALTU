@@ -1,4 +1,3 @@
-export { default as Sparkline } from './Sparkline';
 export { default as Empty } from './Empty';
 export { default as StatusBadge } from './StatusBadge';
 export { default as MaterialChip, materialIcon } from './MaterialChip';

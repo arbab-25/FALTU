@@ -121,7 +121,7 @@ export default function CustomerDashboard() {
               height={300}
               customer={user?.lat && user?.lng ? { lat: user.lat, lng: user.lng, label: 'You' } : null}
               collectors={collectors} />
-            <p className="mt-3 text-[11.5px] text-neutral-400">Demo map · approximate positions for visualization</p>
+            <p className="mt-3 text-[11.5px] text-neutral-500">Demo map · approximate positions for visualization</p>
           </div>
         </div>
       </div>
@@ -130,12 +130,12 @@ export default function CustomerDashboard() {
       <div className="card p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-[16px] font-bold text-ink">{t('recentPickups')}</h2>
-          <Link to="/app/pickups" className="text-[13px] font-semibold text-brand-600 hover:underline">{t('viewAll')}</Link>
+          <Link to="/app/pickups" className="text-[13px] font-semibold text-brand-700 hover:underline">{t('viewAll')}</Link>
         </div>
         {!pickups ? (
           <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-12" />)}</div>
         ) : pickups.length === 0 ? (
-          <p className="py-8 text-center text-sm text-neutral-400">No pickups yet — schedule your first one.</p>
+          <p className="py-8 text-center text-sm text-neutral-500">No pickups yet — schedule your first one.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px]">

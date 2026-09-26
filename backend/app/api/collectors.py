@@ -90,7 +90,7 @@ def route(body: RouteOptimizeRequest, user: dict = Depends(require_roles("collec
     with db() as conn:
         owned = conn.execute(
             f"SELECT COUNT(*) n FROM pickup_requests WHERE id IN "
-            f"({','.join('?' * len(body.pickup_ids))}) AND collector_id=?",
+            f"({','.join('?' * len(body.pickup_ids))}) AND collector_id=?",  # nosec B608 - placeholders only, values bound
             (*body.pickup_ids, user["id"])).fetchone()
     if owned["n"] != len(body.pickup_ids):
         raise HTTPException(403, "Route includes pickups not assigned to you")

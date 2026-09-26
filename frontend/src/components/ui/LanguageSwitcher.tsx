@@ -18,7 +18,7 @@ export default function LanguageSwitcher({ compact = false }: { compact?: boolea
           <button key={o.value} type="button" onClick={() => setLang(o.value)}
             aria-pressed={lang === o.value}
             className={`px-2 py-1 text-[11.5px] font-bold transition
-              ${lang === o.value ? 'bg-brand-600 text-white' : 'text-neutral-500 hover:bg-neutral-50'}`}>
+              ${lang === o.value ? 'bg-brand-700 text-white' : 'text-neutral-600 hover:bg-neutral-50'}`}>
             {o.label}
           </button>
         ))}

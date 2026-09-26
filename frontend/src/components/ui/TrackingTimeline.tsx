@@ -38,11 +38,11 @@ export default function TrackingTimeline({ status }: { status: string }) {
                 active ? <Truck size={12} className="animate-pulse-soft" /> : <CircleDashed size={12} />}
             </span>
             <div>
-              <p className={`text-sm font-semibold ${done || active ? 'text-ink' : 'text-neutral-400'}`}>
+              <p className={`text-sm font-semibold ${done || active ? 'text-ink' : 'text-neutral-500'}`}>
                 {step.label}
               </p>
               {active && (
-                <p className="text-[12px] font-medium text-brand-600">In progress…</p>
+                <p className="text-[12px] font-medium text-brand-700">In progress…</p>
               )}
             </div>
           </li>

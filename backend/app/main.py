@@ -77,7 +77,7 @@ def create_app() -> FastAPI:
             from .database import db
             with db() as conn:
                 for tbl in ("users", "pickup_requests", "transactions"):
-                    n = conn.execute(f"SELECT COUNT(*) AS n FROM {tbl}").fetchone()
+                    n = conn.execute(f"SELECT COUNT(*) AS n FROM {tbl}").fetchone()  # nosec B608 - fixed table tuple
                     counts[tbl] = int(n["n"] if not isinstance(n, dict) else (n.get("n") or 0))
         except Exception as e:  # pragma: no cover - diagnostics only
             db_ok, db_err = False, str(e)[:200]

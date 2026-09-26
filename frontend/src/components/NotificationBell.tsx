@@ -28,7 +28,7 @@ export default function NotificationBell() {
         className="relative rounded-xl border border-neutral-200 bg-white p-2 text-neutral-600 transition hover:border-brand-300 hover:text-brand-700">
         <Bell size={17} />
         {unread > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
