@@ -23,33 +23,45 @@ This guide takes the prototype from local SQLite to a live cloud deployment:
 
 ## 2. Push this repo (done)
 
-The repo already contains `render.yaml` (Blueprint) with both services defined.
+The repo already contains `render.yaml` — a **single-service blueprint**: one
+Render web service serves BOTH the built frontend and the API from the same
+origin. There is no CORS, no build-time API URL, and no second service that
+can drift out of sync. (The earlier two-service design is exactly what caused
+"backend and frontend not in sync" — it has been removed.)
 
 ## 3. Deploy with the Blueprint (~5 min)
 
 1. Go to **render.com** → sign in with GitHub.
 2. **New +** → **Blueprint** → select the `arbab-25/FALTU` repo → **Connect**.
-3. Render reads `render.yaml` and shows two services. When prompted for **DATABASE_URL**, paste your Neon connection string from step 1.
-4. Click **Apply**. First deploys take ~3–5 minutes.
-   - The API auto-creates all tables on Neon and seeds 2,850 demo users + 1,248 pickups in the background (check the API logs for `Cloud database seeded`).
-5. Note your live URLs (Render shows them after deploy):
-   - API: `https://kabadiwala-api.onrender.com` (docs at `/api/docs`)
-   - Site: `https://kabadiwala-web.onrender.com`
+3. Render reads `render.yaml` and shows **one service: `kabadiwala-sih`**.
+   When prompted for **DATABASE_URL**, paste your Neon connection string (the
+   `-pooler` one, with `?sslmode=require`).
+4. Click **Apply**. First deploy takes ~5 minutes (installs Python deps,
+   builds the frontend, starts the API).
+   - The API auto-creates all tables on Neon and seeds 2,850 demo users +
+     1,248 pickups in the background (check Logs for `Cloud database seeded`).
+5. Your ONE live URL (shown after deploy):
+   - App + API: `https://kabadiwala-sih.onrender.com`
+   - Diagnostics: `https://kabadiwala-sih.onrender.com/api/health`
+   - API docs: `https://kabadiwala-sih.onrender.com/api/docs`
 
-## 4. Cross-check the URLs
+## 4. Verify the deploy (30 seconds)
 
-`render.yaml` wires the two services together using the default names
-(`kabadiwala-api` / `kabadiwala-web`). If Render appends a suffix to either
-service name, update the URLs:
+Open `/api/health` on your service URL. You must see:
 
-1. **Frontend → API:** Static site → **Environment** → `VITE_API_BASE_URL`
-   → `https://<your-api-name>.onrender.com/api` → **Save & Deploy**.
-2. **API → Frontend (CORS):** API service → **Environment** → edit the
-   `cors` origins in `render.yaml`, or add env var `CORS_ORIGINS` with your
-   live site URL.
+```json
+{
+  "app": "Kabadiwala Connect",
+  "code_version": "1.0.0-sih26229",
+  "database": "postgresql (ep-…neon.tech)",
+  "database_ok": true,
+  "counts": { "users": 2855 }
+}
+```
 
-> The Vite env var is baked in at **build time** — after changing it, trigger a
-> **Manual Deploy → Deploy latest commit** on the static site.
+If `database` says `sqlite`, `DATABASE_URL` did not reach the service — set it
+in **Environment** and Manual Deploy. If health shows a different
+`code_version`, the service is running foreign code — delete that service.
 
 ## 5. Demo the live site
 
@@ -77,27 +89,20 @@ Use the same demo accounts (seeded into Neon automatically):
 
 ### "Backend not working / data not stored / frontend out of sync"
 
-The #1 cause: **two different apps claim the same Render service name.** The site at
-`https://kabadiwala-api.onrender.com` may be serving a *different* project (check
-`https://<api-name>.onrender.com/api/health` — our API always reports
-`"code_version": "1.0.0-sih26229"`; if you get anything else, that service is not ours).
+**This architecture is now impossible by construction:** one service serves both
+the app and the API, so they can never disagree. If you previously created the
+two-service blueprint (`kabadiwala-api` + `kabadiwala-web`), **delete both
+services** and redeploy from the current `render.yaml`.
 
-Fix (Render Dashboard):
-1. Open the **kabadiwala-api** service → **Settings** → verify **Repo** = `arbab-25/FALTU`
-   and **Branch** = `main`. If it points elsewhere, the name collision is the problem —
-   **rename our service** (Settings → Name) to something unique like `faltu-sih-api`, then
-   update `VITE_API_BASE_URL` on the frontend to `https://faltu-sih-api.onrender.com/api`
-   and **Manual Deploy** the frontend.
-2. Open **Environment** → confirm `DATABASE_URL` = your Neon `-pooler` string. If it's
-   missing, the API silently falls back to a throwaway local SQLite disk.
-3. **Manual Deploy → Deploy latest commit**, then check Logs for
-   `backend ready | database: postgresql (ep-…neon.tech)`.
-4. Visit `https://<api>.onrender.com/api/health` — you should see `code_version`,
-   `database: postgresql (…)`, and non-zero `counts`. That is the source of truth.
-
-The frontend now shows an amber banner automatically when the backend is unreachable or
-running the wrong app — if you see it, the URL in the banner is what the frontend is
-calling; make that service return `code_version: 1.0.0-sih26229`.
+Quick checks that still matter:
+1. `https://<service>.onrender.com/api/health` must report
+   `"code_version": "1.0.0-sih26229"` — anything else means the service is
+   running foreign code (delete it).
+2. `"database"` must say `postgresql (ep-…neon.tech)` and `database_ok: true`
+   — if it says `sqlite`, `DATABASE_URL` is missing from the service's
+   **Environment** (that is exactly the "data not stored in Neon" symptom:
+   the backend was writing to a throwaway local disk).
+3. After any **Environment** change: **Manual Deploy → Deploy latest commit**.
 
 | Symptom | Fix |
 |---|---|

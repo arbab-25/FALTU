@@ -1,27 +1,32 @@
 # Render Blueprint — Kabadiwala Connect (SIH26229)
 #
-# Provisions:
-#   1. kabadiwala-api   FastAPI backend (Python)
-#   2. kabadiwala-web   React static site (Vite build)
-#   3. DATABASE_URL     your Neon Postgres connection string (sync: false)
+# ONE service serves BOTH the built frontend and the API from the same origin.
+# No CORS, no build-time API URL, nothing that can drift apart. The previous
+# two-service setup caused "backend and frontend not in sync": the frontend
+# baked in an API URL whose name was taken by a different project, and the
+# two services could deploy different code versions independently.
 #
-# Deploy: Render Dashboard → New + → Blueprint → pick this repo.
+# Deploy: Render Dashboard → New + → Blueprint → repo arbab-25/FALTU → Connect.
 # Paste your Neon connection string when prompted for DATABASE_URL.
+#
+# After deploy, ONE URL does everything:
+#   https://kabadiwala-sih.onrender.com/            → the app
+#   https://kabadiwala-sih.onrender.com/api/health  → diagnostic fingerprint
 
 services:
-  # ---------------- FastAPI backend ----------------
   - type: web
-    name: kabadiwala-api
+    name: kabadiwala-sih
     runtime: python
     plan: free
-    rootDir: backend
-    buildCommand: pip install --upgrade pip && pip install -r ../requirements.txt psycopg2-binary
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: |
+      pip install --upgrade pip && pip install -r requirements.txt
+      (npm install --prefix frontend && npm run build --prefix frontend) || echo "Node unavailable — serving the committed frontend/dist bundle"
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: DATABASE_URL
-        sync: false          # paste your Neon connection string here
+        sync: false          # paste your Neon connection string (the -pooler one)
       - key: SECRET_KEY
         generateValue: true
       - key: ENV
@@ -30,25 +35,5 @@ services:
         value: 3.12.6
       - key: APP_NAME
         value: Kabadiwala Connect
-      - key: CORS_ORIGINS
-        value: https://kabadiwala-web.onrender.com,http://localhost:5173
-
-  # ---------------- React frontend (static site) ----------------
-  - type: web
-    name: kabadiwala-web
-    runtime: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./frontend/dist
-    pullRequestPreviewsEnabled: false
-    routes:
-      # SPA fallback: every path serves index.html
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    headers:
-      - path: /assets/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://kabadiwala-api.onrender.com/api
+      - key: NODE_VERSION
+        value: "20"

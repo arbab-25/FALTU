@@ -1,14 +1,15 @@
 """Kabadiwala Connect — FastAPI application entry point."""
 import logging
+import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import APP_NAME, IS_POSTGRES, UPLOAD_DIR, database_label
-import os
 from .database import init_db
 from .api import admin, auth, collectors, impact, notifications, pickups, waste
 
@@ -102,6 +103,29 @@ def create_app() -> FastAPI:
         log.exception("Unhandled error")
         return JSONResponse(status_code=500,
                             content={"detail": "Internal error — demo continues"})
+
+    # ---------- Same-origin SPA serving (single-service deployment) ----------
+    # The built frontend is served by THIS service, so the UI and API can never
+    # drift apart: one URL, no CORS, no build-time API URL to mismatch.
+    dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+    if dist.is_dir():
+        assets = dist / "assets"
+        if assets.is_dir():
+            app.mount("/assets", StaticFiles(directory=str(assets)), name="assets")
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        def spa(full_path: str):
+            # Real files (favicon, etc.) win; everything else falls back to
+            # index.html so client-side routing works on deep links.
+            candidate = (dist / full_path).resolve()
+            if (full_path
+                    and candidate.is_file()
+                    and str(candidate).startswith(str(dist.resolve()))):
+                return FileResponse(candidate)
+            return FileResponse(dist / "index.html")
+        log.info("Serving frontend from %s", dist)
+    else:
+        log.info("No built frontend found at %s — API-only mode", dist)
 
     return app
 

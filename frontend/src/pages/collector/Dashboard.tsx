@@ -10,9 +10,11 @@ import type { CollectorStats, Pickup } from '@/types';
 import { formatDateTime, formatINR, formatKg } from '@/utils/format';
 import { KpiCard, StatusBadge, MaterialChip } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
+import { useLang } from '@/context/LanguageContext';
 
 export default function CollectorDashboard() {
   const { user } = useAuth();
+  const { t } = useLang();
   const [stats, setStats] = useState<CollectorStats | null>(null);
   const [pending, setPending] = useState<Pickup[] | null>(null);
   const [active, setActive] = useState<Pickup[] | null>(null);
@@ -30,30 +32,30 @@ export default function CollectorDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-xl font-bold text-ink">Namaste, {user?.business_name || user?.name} 🛺</h1>
-          <p className="text-[13px] text-ink-soft">{stats?.pending_in_zone ?? 0} new requests in your zone today · demo data</p>
+          <p className="text-[13px] text-ink-soft">{stats?.pending_in_zone ?? 0} {t('newRequestsInZone')} · {t('demoData')}</p>
         </div>
-        <Link to="/app/requests" className="btn-primary"><ClipboardList size={16} /> View Requests</Link>
+        <Link to="/app/requests" className="btn-primary"><ClipboardList size={16} /> {t('viewRequests')}</Link>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard icon={Truck} label="Today's Pickups" tone="brand" value={stats?.today_pickups ?? '—'} />
-        <KpiCard icon={Package} label="Today's Weight" tone="blue" value={stats ? formatKg(stats.today_weight_kg) : '—'} />
-        <KpiCard icon={Coins} label="Today's Earnings" tone="amber" value={stats ? formatINR(stats.today_earnings) : '—'} />
-        <KpiCard icon={Wallet} label="This Month" tone="violet" value={stats ? formatINR(stats.month_earnings, { compact: true }) : '—'}
-          sub="lifetime ₹" />
+        <KpiCard icon={Truck} label={t('todaysPickups')} tone="brand" value={stats?.today_pickups ?? '—'} />
+        <KpiCard icon={Package} label={t('todaysWeight')} tone="blue" value={stats ? formatKg(stats.today_weight_kg) : '—'} />
+        <KpiCard icon={Coins} label={t('todaysEarnings')} tone="amber" value={stats ? formatINR(stats.today_earnings) : '—'} />
+        <KpiCard icon={Wallet} label={t('thisMonth')} tone="violet" value={stats ? formatINR(stats.month_earnings, { compact: true }) : '—'}
+          sub={t('lifetime')} />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
         {/* Pending requests */}
         <div className="card p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-[16px] font-bold text-ink">New Pickup Requests</h2>
-            <Link to="/app/requests" className="text-[13px] font-semibold text-brand-700 hover:underline">View all</Link>
+            <h2 className="font-display text-[16px] font-bold text-ink">{t('newRequests')}</h2>
+            <Link to="/app/requests" className="text-[13px] font-semibold text-brand-700 hover:underline">{t('viewAll')}</Link>
           </div>
           {!pending ? (
             <div className="space-y-2">{[1, 2].map((i) => <div key={i} className="skeleton h-20" />)}</div>
           ) : pending.length === 0 ? (
-            <p className="py-8 text-center text-sm text-neutral-400">No new requests right now.</p>
+            <p className="py-8 text-center text-sm text-ink-soft">{t('noNewRequests')}</p>
           ) : (
             <ul className="space-y-3">
               {pending.slice(0, 3).map((p) => (

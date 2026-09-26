@@ -44,6 +44,16 @@ const STRINGS: Record<string, Record<Lang, string>> = {
   availableNow: { en: 'Available now', hi: 'अभी उपलब्ध', gu: 'હવે ઉપલબ્ધ' },
   busy: { en: 'Busy', hi: 'व्यस्त', gu: 'વ્યસ્ત' },
   verified: { en: 'Verified', hi: 'सत्यापित', gu: 'ચકાસેલ' },
+  viewRequests: { en: 'View Requests', hi: 'अनुरोध देखें', gu: 'વિનંતીઓ જુઓ' },
+  noNewRequests: { en: 'No new requests right now.', hi: 'अभी कोई नया अनुरोध नहीं।', gu: 'અત્યારે કોઈ નવી વિનંતી નથી.' },
+  newRequestsInZone: { en: 'new requests in your zone today', hi: 'आज आपके ज़ोन में नए अनुरोध', gu: 'આજે તમારા ઝોનમાં નવી વિનંતીઓ' },
+  lifetime: { en: 'lifetime', hi: 'कुल', gu: 'કુલ' },
+  awaiting: { en: 'Awaiting', hi: 'प्रतीक्षित', gu: 'રાહ જોવાય છે' },
+  noPickupsYet: { en: 'No pickups yet', hi: 'अभी कोई पिकअप नहीं', gu: 'હજુ કોઈ પિકઅપ નથી' },
+  noStatusPickups: { en: 'No pickups with this status', hi: 'इस स्थिति में कोई पिकअप नहीं', gu: 'આ સ્થિતિમાં કોઈ પિકઅપ નથી' },
+  scheduleFirst: { en: 'Schedule your first pickup — it takes under a minute.', hi: 'अपना पहला पिकअप शेड्यूल करें — एक मिनट से भी कम में।', gu: 'તમારું પહેલું પિકઅપ શેડ્યૂલ કરો — એક મિનિટથી ઓછામાં.' },
+  tryDifferentFilter: { en: 'Try a different filter.', hi: 'कोई और फ़िल्टर आज़माएँ।', gu: 'બીજું ફિલ્ટર અજમાવો.' },
+  everyRequest: { en: 'Every request, from creation to receipt.', hi: 'हर अनुरोध, निर्माण से रसीद तक।', gu: 'દરેક વિનંતી, સર્જનથી રસીદ સુધી.' },
 
   // ---------- Landing ----------
   heroTitle: { en: 'Turn Everyday Waste Into Real Value.', hi: 'रोज़ के कचरे को असली मूल्य में बदलें।', gu: 'રોજિંદો કચરો સાચા મૂલ્યમાં બદલો.' },

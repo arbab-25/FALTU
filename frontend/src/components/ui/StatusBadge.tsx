@@ -1,4 +1,4 @@
-import { STATUS_LABELS } from '@/utils/format';
+import { useLang } from '@/context/LanguageContext';
 
 const MAP: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border border-amber-200',
@@ -9,10 +9,22 @@ const MAP: Record<string, string> = {
   cancelled: 'bg-red-50 text-red-600 border border-red-200',
 };
 
+/** status value -> dictionary key (dictionary uses camelCase keys). */
+const KEY: Record<string, string> = {
+  pending: 'pending',
+  accepted: 'accepted',
+  on_the_way: 'onTheWay',
+  collected: 'collected',
+  completed: 'completed',
+  cancelled: 'cancelled',
+};
+
 export default function StatusBadge({ status }: { status: string }) {
+  const { t } = useLang();
+  const key = KEY[status];
   return (
     <span className={`badge ${MAP[status] || 'bg-neutral-100 text-neutral-600 border border-neutral-200'}`}>
-      {STATUS_LABELS[status] || status}
+      {key ? t(key) : status}
     </span>
   );
 }

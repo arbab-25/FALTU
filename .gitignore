@@ -1,5 +1,4 @@
 node_modules/
-dist/
 __pycache__/
 *.pyc
 .venv/
@@ -14,6 +13,8 @@ backend/uploads/*
 .DS_Store
 *.log
 .freebuff/
-frontend/dist/
-.neon
-.env.local
+*.neon
+
+# NOTE: frontend/dist is intentionally COMMITTED — the single Render service
+# serves the built SPA straight from the repo (no Node on the Python runtime).
+# Rebuild locally (npm run build) before pushing UI changes.
