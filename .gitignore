@@ -18,3 +18,4 @@ backend/uploads/*
 # NOTE: frontend/dist is intentionally COMMITTED — the single Render service
 # serves the built SPA straight from the repo (no Node on the Python runtime).
 # Rebuild locally (npm run build) before pushing UI changes.
+neon_public_role.txt
