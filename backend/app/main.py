@@ -142,18 +142,31 @@ def create_app() -> FastAPI:
     if dist.is_dir():
         assets = dist / "assets"
         if assets.is_dir():
-            app.mount("/assets", StaticFiles(directory=str(assets)), name="assets")
+            class _ImmutableAssets(StaticFiles):
+                """Vite bundles are content-hashed: cache them forever."""
+
+                def file_response(self, *args, **kwargs):
+                    resp = super().file_response(*args, **kwargs)
+                    resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                    return resp
+
+            app.mount("/assets", _ImmutableAssets(directory=str(assets)), name="assets")
 
         @app.get("/{full_path:path}", include_in_schema=False)
         def spa(full_path: str):
-            # Real files (favicon, etc.) win; everything else falls back to
+            # Real files (fonts, favicon, …) win; everything else falls back to
             # index.html so client-side routing works on deep links.
             candidate = (dist / full_path).resolve()
             if (full_path
                     and candidate.is_file()
                     and str(candidate).startswith(str(dist.resolve()))):
-                return FileResponse(candidate)
-            return FileResponse(dist / "index.html")
+                # Hashed assets & fonts are immutable; index.html must always
+                # revalidate so users get new bundles after a deploy.
+                immutable = "/assets/" in full_path or full_path.startswith("fonts/")
+                cache = "public, max-age=31536000, immutable" if immutable else "public, max-age=3600"
+                return FileResponse(candidate, headers={"Cache-Control": cache})
+            return FileResponse(dist / "index.html",
+                                headers={"Cache-Control": "no-cache"})
         log.info("Serving frontend from %s", dist)
     else:
         log.info("No built frontend found at %s — API-only mode", dist)

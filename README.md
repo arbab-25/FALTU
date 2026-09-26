@@ -185,7 +185,10 @@ Every cycle is validated with real tooling — run these yourself:
 | API regression suite | `python backend/selftest.py [--base URL]` | **33/33 PASS** on SQLite **and** Neon Postgres |
 | Accessibility (WCAG 2.1 AA) | axe-core audits | 0 violations on landing, login, customer, collector, admin, admin/pickups, recycler flow, recycler intake, presentation, schedule wizard |
 | Production build | `npm run build` | clean; vendor-split bundles (react 166 kB / app 203 kB / charts 422 kB) |
-| End-to-end journey | scripted login → pickup → accept → complete → receipt → impact | verified on both dialects |
+| Fonts & CSP | self-hosted Inter + Poppins (variable Inter, latin subsets) | zero third-party requests; Google-Fonts CDN was blocked by our own CSP |
+| HTTP caching | `index.html: no-cache` · hashed assets & fonts: immutable 1y | correct revalidation after every deploy |
+| Live deployment | `https://kabadiwala-sih-fbz1.onrender.com` | health fingerprint ✓ · 33/33 selftest ✓ · all security headers ✓ · SPA + deep links ✓ |
+| End-to-end journey | scripted login → pickup → accept → complete → receipt → impact | verified on both dialects **and** against the live cloud deployment |
 | Render-crash safety | app-wide `ErrorBoundary` | failures show a recovery card, never a blank screen |
 
 **Cloud-database performance work** (measured against real Neon Postgres):
