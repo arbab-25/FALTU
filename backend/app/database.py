@@ -208,6 +208,17 @@ class _PgCompat:
         cur.execute(pgcompat.q(sql), tuple(params))
         return cur
 
+    def execute_raw(self, sql, params=()):
+        """Execute SQL that is already in Postgres form (no translation)."""
+        cur = self._conn.cursor()
+        cur.execute(sql, tuple(params))
+        return cur
+
+    def executemany(self, sql, seq):
+        cur = self._conn.cursor()
+        cur.executemany(pgcompat.q(sql), [tuple(p) for p in seq])
+        return cur
+
     def executescript(self, script):
         pgcompat.init_pg(script)
 
@@ -239,6 +250,24 @@ def insert_id(conn, sql: str, params: tuple = ()) -> int:
         return int(cur.fetchone()["id"])
     cur = conn.execute(sql, params)
     return int(cur.lastrowid)
+
+
+def insert_rows(conn, table: str, columns: list[str], rows: list[tuple],
+                chunk: int = 300) -> None:
+    """Batch insert using multi-row VALUES — one round-trip per `chunk` rows.
+
+    Critical for cloud databases (Neon pooler ≈ 0.2 s per round-trip).
+    """
+    if not rows:
+        return
+    mark = "%s" if IS_POSTGRES else "?"
+    row_ph = "(" + ",".join([mark] * len(columns)) + ")"
+    head = f"INSERT INTO {table} ({','.join(columns)}) VALUES "
+    raw = getattr(conn, "execute_raw", conn.execute)
+    for i in range(0, len(rows), chunk):
+        part = rows[i:i + chunk]
+        flat = [v for row in part for v in row]
+        raw(head + ",".join([row_ph] * len(part)), flat)
 
 
 def row_dict(row) -> dict:

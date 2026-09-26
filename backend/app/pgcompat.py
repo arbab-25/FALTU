@@ -7,11 +7,11 @@ when DATABASE_URL points at Postgres:
 - PostgreSQL (Neon):    DATABASE_URL postgres[ql]://      → psycopg2 + $N params
 
 Translation rules (applied by `q()`):
-- `?` placeholders        → `$1, $2, ...`
+- `?` placeholders        → `%s` (psycopg2 client-side binding)
 - `datetime('now')`       → `to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`
 - `date('now','start of month')` → `to_char(date_trunc('month', now()), 'YYYY-MM-DD')`
 """
-import re
+import re  # noqa: F401  (kept for future pattern-based translations)
 from contextlib import contextmanager
 
 from .config import DATABASE_URL, IS_POSTGRES
@@ -36,13 +36,9 @@ def q(sql: str) -> str:
                       "to_char(date_trunc('month', now()), 'YYYY-MM-DD')")
     sql = sql.replace("date(created_at)=date('now')", "(created_at::date)=current_date")
     sql = sql.replace("date(created_at)", "(created_at::date)::text")
-    counter = {"n": 0}
-
-    def repl(_m):
-        counter["n"] += 1
-        return f"${counter['n']}"
-
-    return re.sub(r"\?", repl, sql)
+    # Escape literal % (LIKE patterns etc.) before injecting %s placeholders.
+    sql = sql.replace("%", "%%")
+    return sql.replace("?", "%s")
 
 
 def connect():
@@ -84,8 +80,11 @@ def init_pg(schema_sql: str) -> None:
     conn = connect()
     try:
         with conn.cursor() as cur:
-            for stmt in _pg_schema(schema_sql):
-                cur.execute(stmt)
+            for i, stmt in enumerate(_pg_schema(schema_sql)):
+                try:
+                    cur.execute(stmt)
+                except Exception:
+                    raise RuntimeError(f"PG schema statement #{i} failed: {stmt[:160]}") from None
         conn.commit()
     finally:
         conn.close()
@@ -97,6 +96,7 @@ def _pg_schema(schema_sql: str) -> list[str]:
         s = stmt.strip()
         if not s or s.upper().startswith("PRAGMA"):
             continue
+        s = q(s)  # translate SQLite datetime()/date() defaults for Postgres
         s = s.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "BIGSERIAL PRIMARY KEY")
         s = s.replace(" REAL ", " DOUBLE PRECISION ")
         out.append(s + ";")
