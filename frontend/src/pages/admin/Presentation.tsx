@@ -30,7 +30,7 @@ export default function Presentation() {
         <Link to="/app" className="btn bg-white/10 text-white hover:bg-white/20"><Minimize2 size={14} /> Exit</Link>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <section className="mx-auto max-w-6xl px-6 py-10" aria-label="Presentation metrics">
         <p className="text-center text-[12px] font-bold uppercase tracking-[0.3em] text-brand-300">
           Smart India Hackathon 2026 · SIH26229
         </p>
@@ -95,10 +95,10 @@ export default function Presentation() {
           ))}
         </div>
 
-        <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-[11px] text-white/35">
+        <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-[11px] text-white/60">
           <TrendingUp size={12} /> All metrics are demo data from the SIH26229 prototype environment.
         </p>
-      </main>
+      </section>
     </div>
   );
 }

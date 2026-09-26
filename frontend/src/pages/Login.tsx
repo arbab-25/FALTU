@@ -80,7 +80,7 @@ export default function Login() {
             ))}
           </div>
         </div>
-        <p className="text-[11.5px] text-white/35">Prototype demo · all data is simulated</p>
+        <p className="text-[11.5px] text-white/60">Prototype demo · all data is simulated</p>
         <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-brand-600/20 blur-3xl" />
       </div>
 
@@ -133,7 +133,7 @@ export default function Login() {
               </div>
 
               {error && (
-                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-[13px] font-medium text-red-600">
+                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-[13px] font-medium text-red-700">
                   {error}
                 </p>
               )}

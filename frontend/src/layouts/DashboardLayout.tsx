@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import type { ComponentType } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import type { LucideProps } from 'lucide-react';
 import {
   BarChart3, CalendarClock, ClipboardList, Factory, LayoutDashboard, Leaf,
   LogOut, Menu, Presentation, Recycle, Route, ShieldCheck, Trash2, Users, UserCircle, Wallet, X,
@@ -112,7 +111,7 @@ export default function DashboardLayout() {
           </div>
         </div>
         <button type="button" onClick={handleLogout}
-          className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-sm font-medium text-neutral-500 transition hover:bg-red-50 hover:text-red-600">
+          className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-sm font-medium text-neutral-500 transition hover:bg-red-50 hover:text-red-700">
           <LogOut size={16} /> Logout
         </button>
       </div>

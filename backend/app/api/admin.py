@@ -103,6 +103,17 @@ def recycler_overview(user: dict = Depends(require_roles("recycler"))):
         incoming = conn.execute(
             "SELECT p.* FROM pickup_requests p WHERE p.status='collected'"
             " OR (p.status='completed' AND p.recycler_id IS NULL) LIMIT 12").fetchall()
+        # Attach material items in ONE query — the intake UI renders p.items
+        # per card, and missing items crashed the page (undefined.map).
+        inc_ids = [int(r["id"]) for r in incoming]
+        items_by_pickup: dict[int, list] = {}
+        if inc_ids:
+            ph = ",".join("?" * len(inc_ids))
+            for it in conn.execute(
+                f"SELECT * FROM pickup_items WHERE pickup_id IN ({ph})",  # nosec B608 - placeholders only, ids bound
+                tuple(inc_ids),
+            ).fetchall():
+                items_by_pickup.setdefault(int(it["pickup_id"]), []).append(row_dict(it))
         centers = [row_dict(r) for r in conn.execute(
             "SELECT * FROM recycling_centers").fetchall()]
 
@@ -119,7 +130,10 @@ def recycler_overview(user: dict = Depends(require_roles("recycler"))):
         "month_batches": month["n"],
         "weekly": [{"date": r["d"], "weight": round(r["w"] or 0, 0)} for r in reversed(weekly)],
         "flow": flow,
-        "incoming": [row_dict(r) for r in incoming],
+        "incoming": [
+            {**row_dict(r), "items": items_by_pickup.get(int(r["id"]), [])}
+            for r in incoming
+        ],
         "centers": centers,
         "demo_note": "Demo facility data for SIH26229.",
     }

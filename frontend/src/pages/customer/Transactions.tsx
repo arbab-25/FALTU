@@ -52,7 +52,7 @@ export default function Transactions() {
               description="Complete a pickup to generate your first digital receipt."
               action={<Link to="/app/schedule" className="btn-primary">Schedule Pickup</Link>} />
           ) : (
-            <div className="card overflow-x-auto">
+            <div className="card overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" tabIndex={0} role="region" aria-label="Data table (scrollable)">
               <table className="w-full min-w-[560px]">
                 <thead><tr><th className="th">Pickup</th><th className="th">Date</th><th className="th">Weight</th><th className="th">Amount</th><th className="th"></th></tr></thead>
                 <tbody>

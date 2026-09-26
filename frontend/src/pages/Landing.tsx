@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, BadgeCheck, Banknote, BrainCircuit, Camera, ClipboardList,
-  HandCoins, HelpCircle, Leaf, LineChart, MapPinned, Package, Recycle, Route as RouteIcon,
+  HelpCircle, Leaf, LineChart, MapPinned, Package, Recycle, Route as RouteIcon,
   ShieldCheck, Smartphone, Star, Trash2, TrendingUp, Truck, Users, Wallet, XCircle,
 } from 'lucide-react';
 import { useLang } from '@/context/LanguageContext';
@@ -23,13 +23,6 @@ const SOLUTION = [
   { icon: Truck, title: 'Match a Collector', text: 'Smart matching ranks nearby collectors by distance, availability and rating.' },
   { icon: ClipboardList, title: 'Record Transaction', text: 'Weighed, priced and receipted digitally for both sides.' },
   { icon: Leaf, title: 'Track Impact', text: 'Every kilogram is traced to recycling and CO₂e savings.' },
-];
-
-const FLOATING_STATS = [
-  { label: 'Recycled', value: '12,450 kg' },
-  { label: 'Pickups completed', value: '1,240' },
-  { label: 'Collector earnings', value: '₹8.4L' },
-  { label: 'Households connected', value: '2,850' },
 ];
 
 const EMPOWER = [
@@ -174,12 +167,12 @@ export default function Landing() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {PROBLEMS.map((p) => (
               <div key={p.title} className="card card-hover p-6">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-700">
                   <p.icon size={21} />
                 </span>
                 <h3 className="mt-4 font-display text-[16px] font-bold text-ink">{p.title}</h3>
                 <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">{p.text}</p>
-                <p className="mt-3 border-t border-dashed border-neutral-200 pt-3 text-[12px] font-semibold text-red-600">
+                <p className="mt-3 border-t border-dashed border-neutral-200 pt-3 text-[12px] font-semibold text-red-700">
                   Impact: {p.impact}
                 </p>
               </div>

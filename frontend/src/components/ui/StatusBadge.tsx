@@ -6,7 +6,7 @@ const MAP: Record<string, string> = {
   on_the_way: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
   collected: 'bg-violet-50 text-violet-700 border border-violet-200',
   completed: 'bg-brand-50 text-brand-700 border border-brand-200',
-  cancelled: 'bg-red-50 text-red-600 border border-red-200',
+  cancelled: 'bg-red-50 text-red-700 border border-red-200',
 };
 
 /** status value -> dictionary key (dictionary uses camelCase keys). */

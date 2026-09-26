@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import APP_NAME, IS_POSTGRES, UPLOAD_DIR, database_label
 from .database import init_db
@@ -17,8 +18,36 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("kabadiwala")
 
 
-class StartupGuard:
-    pass
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Baseline browser security headers on every response.
+
+    Graded by scanners like SecurityHeaders.com and Mozilla Observatory:
+    X-Content-Type-Options, X-Frame-Options, Referrer-Policy, a CSP locked
+    to self (React inline styles are style-src 'unsafe-inline'), HSTS in
+    production, and Permissions-Policy. CORS_ORIGINS stays open for the demo;
+    the remaining scanners (TLS/cookies) are satisfied by Render's platform TLS.
+    """
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.production = os.getenv("ENV", "development").lower() in {"production", "prod"}
+
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        h = response.headers
+        h["X-Content-Type-Options"] = "nosniff"
+        h["X-Frame-Options"] = "DENY"
+        h["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        h["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; font-src 'self' data:; connect-src 'self'; "
+            "frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        )
+        h["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)"
+        h["Cross-Origin-Opener-Policy"] = "same-origin"
+        if self.production:
+            h["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
 
 
 def create_app() -> FastAPI:
@@ -40,6 +69,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.add_middleware(SecurityHeadersMiddleware)
 
     @app.on_event("startup")
     def on_startup():

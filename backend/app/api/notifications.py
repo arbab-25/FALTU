@@ -1,5 +1,5 @@
 """User notifications."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from ..database import db, row_dict
 from ..deps import get_current_user
@@ -8,7 +8,8 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 
 @router.get("")
-def list_notifications(user: dict = Depends(get_current_user), limit: int = 30):
+def list_notifications(user: dict = Depends(get_current_user),
+                       limit: int = Query(30, ge=1, le=100)):
     with db() as conn:
         rows = conn.execute(
             "SELECT * FROM notifications WHERE user_id=? ORDER BY id DESC LIMIT ?",

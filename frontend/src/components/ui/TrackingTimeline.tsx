@@ -14,7 +14,7 @@ const ORDER = ['pending', 'accepted', 'on_the_way', 'collected', 'completed'];
 export default function TrackingTimeline({ status }: { status: string }) {
   if (status === 'cancelled') {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
         This pickup was cancelled.
       </div>
     );

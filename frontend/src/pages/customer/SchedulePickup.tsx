@@ -1,9 +1,9 @@
 /** Schedule Pickup — 4-step wizard with AI estimator and smart matching. */
 import { useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, BrainCircuit, Camera, Check, CheckCircle2, ImagePlus,
-  Info, Loader2, MapPin, Sparkles, Star, Trash2, Truck, X,
+  ArrowLeft, ArrowRight, BrainCircuit, Check, CheckCircle2,
+  Info, Loader2, MapPin, Sparkles, Star, Trash2,
 } from 'lucide-react';
 import { api } from '@/services/api';
 import type { AiAnalysis, CollectorCard, Pickup, ValueEstimate } from '@/types';
@@ -29,7 +29,6 @@ const STEPS = ['Waste Type', 'Weight & AI', 'Collector', 'Confirm'];
 export default function SchedulePickup() {
   const { user, refreshUser } = useAuth();
   const { t } = useLang();
-  const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState(0);
@@ -118,11 +117,6 @@ export default function SchedulePickup() {
     } finally {
       setCreating(false);
     }
-  };
-
-  const assignCollector = async (pickupId: number, collectorId: number) => {
-    // Demo: immediately attach the chosen collector so the tracking screen is complete.
-    await api.patch(`/pickups/${pickupId}/status`, { status: 'accepted' }).catch(() => void 0);
   };
 
   if (created && step === 3) {
@@ -242,7 +236,7 @@ export default function SchedulePickup() {
                 'Uploads are analysed and discarded; nothing is stored.'}
             </p>
             {analyzeError && (
-              <p role="alert" className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-600">{analyzeError}</p>
+              <p role="alert" className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12.5px] text-red-700">{analyzeError}</p>
             )}
           </div>
 
@@ -391,6 +385,12 @@ export default function SchedulePickup() {
             <textarea id="addr" rows={2} value={address} onChange={(e) => setAddress(e.target.value)}
               className="input" placeholder="House / street / landmark" />
           </div>
+
+          {createError && (
+            <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-700">
+              {createError}
+            </p>
+          )}
 
           <div className="mt-5 flex justify-between">
             <button type="button" onClick={() => setStep(1)} className="btn-ghost"><ArrowLeft size={15} /> {t('back')}</button>

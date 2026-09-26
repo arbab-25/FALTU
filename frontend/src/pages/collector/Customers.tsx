@@ -32,7 +32,7 @@ export default function Customers() {
         <Empty icon={Users} title="No customers yet"
           description="Complete pickups to build your customer base." />
       ) : (
-        <div className="card overflow-x-auto">
+        <div className="card overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" tabIndex={0} role="region" aria-label="Data table (scrollable)">
           <table className="w-full min-w-[560px]">
             <thead><tr><th className="th">Customer</th><th className="th">Zone</th><th className="th">Pickups</th><th className="th">Lifetime value</th><th className="th">Last pickup</th><th className="th">Rating</th></tr></thead>
             <tbody>

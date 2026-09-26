@@ -1,7 +1,7 @@
 /** Collector incoming pickup requests. */
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ClipboardList, MapPin, Package, SearchX, X } from 'lucide-react';
+import { Check, ClipboardList, MapPin, Package, X } from 'lucide-react';
 import { api } from '@/services/api';
 import type { Pickup } from '@/types';
 import { formatINR } from '@/utils/format';

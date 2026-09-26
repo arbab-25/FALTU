@@ -39,7 +39,7 @@ export default function AdminPickups() {
       {!pickups ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-12" />)}</div>
       ) : (
-        <div className="card overflow-x-auto">
+        <div className="card overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" tabIndex={0} role="region" aria-label="Data table (scrollable)">
           <table className="w-full min-w-[820px]">
             <thead>
               <tr><th className="th">ID</th><th className="th">Customer</th><th className="th">Collector</th>

@@ -7,13 +7,13 @@ import { LanguageProvider } from '@/context/LanguageContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import ApiStatusBanner from '@/components/ApiStatusBanner';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
 import Impact from '@/pages/Impact';
 import Guidelines from '@/pages/Guidelines';
 import AppIndex from '@/pages/AppIndex';
 
-import CustomerDashboard from '@/pages/customer/Dashboard';
 import SchedulePickup from '@/pages/customer/SchedulePickup';
 import MyPickups from '@/pages/customer/MyPickups';
 import PickupTracking from '@/pages/customer/PickupTracking';
@@ -21,18 +21,15 @@ import Transactions from '@/pages/customer/Transactions';
 import CustomerImpact from '@/pages/customer/CustomerImpact';
 import Profile from '@/pages/Profile';
 
-import CollectorDashboard from '@/pages/collector/Dashboard';
 import Requests from '@/pages/collector/Requests';
 import ActivePickups from '@/pages/collector/ActivePickups';
 import Earnings from '@/pages/collector/Earnings';
 import RoutePlanner from '@/pages/collector/RoutePlanner';
 import Customers from '@/pages/collector/Customers';
 
-import RecyclerOverview from '@/pages/recycler/Overview';
 import RecyclerFlow from '@/pages/recycler/Flow';
 import RecyclerIntake from '@/pages/recycler/Intake';
 
-import AdminAnalytics from '@/pages/admin/Analytics';
 import AdminPickups from '@/pages/admin/AdminPickups';
 import CollectorNetwork from '@/pages/admin/CollectorNetwork';
 import Presentation from '@/pages/admin/Presentation';
@@ -57,6 +54,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <LanguageProvider>
         <AuthProvider>
           <NotificationProvider>
+            <ErrorBoundary>
             <ApiStatusBanner />
             <Routes>
               <Route path="/" element={<Landing />} />
@@ -107,6 +105,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+          </ErrorBoundary>
           </NotificationProvider>
         </AuthProvider>
       </LanguageProvider>

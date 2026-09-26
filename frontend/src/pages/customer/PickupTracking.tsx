@@ -1,7 +1,7 @@
 /** Pickup tracking detail for customers. */
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, MapPin, Phone, Receipt, Star, Truck, XCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Star, Truck, XCircle } from 'lucide-react';
 import { api } from '@/services/api';
 import type { Pickup } from '@/types';
 import { formatINR } from '@/utils/format';

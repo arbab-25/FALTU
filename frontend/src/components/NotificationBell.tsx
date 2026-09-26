@@ -1,6 +1,6 @@
 /** Header notification dropdown. */
 import { useEffect, useRef, useState } from 'react';
-import { Bell, CheckCheck, Leaf, Info, Trophy, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCheck, Info, Leaf } from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
 import { timeAgo } from '@/utils/format';
 

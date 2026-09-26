@@ -173,15 +173,20 @@ Every cycle is validated with real tooling — run these yourself:
 
 | Pipeline | Command | Latest result |
 |---|---|---|
-| TypeScript (strict) | `npx tsc --noEmit` | 0 errors |
+| TypeScript (strict) | `npx tsc --noEmit` | 0 errors — with `noUnusedLocals` + `noUnusedParameters` enforced |
 | Security lint (Python) | `bandit -r backend/app` | 0 issues (all severities) |
+| Known CVEs (Python) | `pip-audit` on the resolved dependency tree | 0 vulnerabilities |
 | Dependency audit (npm) | `npm audit --omit=dev` | 0 vulnerabilities |
 | Dependency consistency | `pip check` | no broken requirements |
-| Dead code / imports | `pyflakes backend/app` | clean |
-| API regression suite | `python backend/selftest.py [--base URL]` | **32/32 PASS** on SQLite **and** Neon Postgres |
-| Accessibility (WCAG 2.1 AA) | axe-core audit of live pages | 0 violations (landing, login, dashboards) |
-| Production build | `npm run build` | clean; vendor-split bundles (react 166 kB / app 199 kB / charts 422 kB gzip ≈ 216 kB total) |
+| Dead code (Python) | `vulture backend/app` | clean |
+| Dead code / imports (TS) | strict `tsc` + manual sweep | all unused imports/state removed |
+| Unused npm dependencies | scripted depcheck | removed (`@neon/*` tooling deps) |
+| Browser security headers | CSP / HSTS / X-Frame-Options / Referrer-Policy / Permissions-Policy | set on every response (see `SecurityHeadersMiddleware`) |
+| API regression suite | `python backend/selftest.py [--base URL]` | **33/33 PASS** on SQLite **and** Neon Postgres |
+| Accessibility (WCAG 2.1 AA) | axe-core audits | 0 violations on landing, login, customer, collector, admin, admin/pickups, recycler flow, recycler intake, presentation, schedule wizard |
+| Production build | `npm run build` | clean; vendor-split bundles (react 166 kB / app 203 kB / charts 422 kB) |
 | End-to-end journey | scripted login → pickup → accept → complete → receipt → impact | verified on both dialects |
+| Render-crash safety | app-wide `ErrorBoundary` | failures show a recovery card, never a blank screen |
 
 **Cloud-database performance work** (measured against real Neon Postgres):
 

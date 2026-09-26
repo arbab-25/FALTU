@@ -21,7 +21,6 @@ export default function FlowDiagram({
   const H = height;
   const colW = 118;
   const gap = 26;
-  const total = nodes.reduce((s, n) => s + n.value, 0) || 1;
 
   // Vertical layout for each column
   const cols: Node[][] = [nodes.slice(0, 2), nodes.slice(2, 4), nodes.slice(4, 6)];
@@ -47,7 +46,12 @@ export default function FlowDiagram({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div
+      className="overflow-x-auto rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+      tabIndex={0}
+      role="region"
+      aria-label="Waste flow diagram (scrollable)"
+    >
       <svg viewBox={`0 0 ${W} ${H}`} className="min-w-[760px]" role="img"
         aria-label="Waste flow diagram">
         <defs>

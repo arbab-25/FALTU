@@ -12,7 +12,7 @@ const STYLES: Record<string, string> = {
   plastic: 'bg-violet-50 text-violet-700 border-violet-200',
   metal: 'bg-neutral-100 text-neutral-700 border-neutral-300',
   glass: 'bg-teal-50 text-teal-700 border-teal-200',
-  'e-waste': 'bg-red-50 text-red-600 border-red-200',
+  'e-waste': 'bg-red-50 text-red-700 border-red-200',
   mixed: 'bg-brand-50 text-brand-700 border-brand-200',
   other: 'bg-neutral-50 text-neutral-600 border-neutral-200',
 };

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/services/api';
 import type { Pickup, Receipt as ReceiptData } from '@/types';
-import { STATUS_LABELS, formatDateTime, formatINR } from '@/utils/format';
+import { formatDateTime, formatINR } from '@/utils/format';
 import { Empty, MaterialChip, Receipt, StatusBadge } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 

@@ -154,6 +154,10 @@ def main() -> int:
     check("presentation mode", st == 200 and pr.get("kpi"))
     st, rov = call("GET", "/recycler/overview", token=tokens["recycler"])
     check("recycler overview + flow", st == 200 and rov.get("flow", {}).get("collected", 0) > 0)
+    # Frontend contract: intake cards render p.items — every incoming pickup
+    # MUST carry an items array (missing items crashed the page with undefined.map).
+    check("recycler intake items contract",
+          all(isinstance(p.get("items"), list) for p in rov.get("incoming", [])))
     st, pub = call("GET", "/impact/public")
     check("public impact (no auth)", st == 200 and pub.get("totals"))
 

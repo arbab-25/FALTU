@@ -59,7 +59,7 @@ export default function MyPickups() {
             : t('tryDifferentFilter')}
           action={filter === 'all' ? <Link to="/app/schedule" className="btn-primary"><CalendarClock size={15} /> {t('schedulePickup')}</Link> : undefined} />
       ) : (
-        <div className="card overflow-x-auto">
+        <div className="card overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400" tabIndex={0} role="region" aria-label="Data table (scrollable)">
           <table className="w-full min-w-[720px]">
             <thead>
               <tr>
