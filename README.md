@@ -55,6 +55,10 @@ python backend/run.py --seed --fresh   # rebuild demo database from scratch
 
 API docs: **http://127.0.0.1:8000/api/docs**
 
+> ☁ **Deploying?** The same code runs on **Render + Neon Postgres** — set `DATABASE_URL`
+> to your Neon connection string and the backend switches dialects, migrates its schema
+> and seeds demo data automatically. Full guide: [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ### 2. Frontend (Node 18+)
 
 ```bash
@@ -123,7 +127,7 @@ Everything runs locally with zero external services or API keys.
 
 `users` (all roles) · `collectors` · `recyclers` · `waste_items` · `pickup_requests` · `pickup_items` · `transactions` · `collector_locations` · `recycling_centers` · `notifications` · `ratings` · `impact_records` · `route_assignments`
 
-SQLite for the local demo; the SQL is portable to PostgreSQL (e.g. Supabase) for production.
+**Dual-dialect persistence:** SQLite for the local demo, PostgreSQL (Neon/Render/Supabase) in the cloud — selected automatically by `DATABASE_URL`, with query translation in `backend/app/pgcompat.py`.
 
 ## 🔌 API Overview
 

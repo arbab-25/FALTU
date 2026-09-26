@@ -30,6 +30,8 @@ BACKEND_HOST = os.getenv("BACKEND_HOST", "127.0.0.1")
 BACKEND_PORT = int(os.getenv("BACKEND_PORT", "8000"))
 
 _database_url = os.getenv("DATABASE_URL", "sqlite:///./kabadiwala.db")
+DATABASE_URL = _database_url
+IS_POSTGRES = _database_url.startswith(("postgres://", "postgresql://"))
 DATABASE_PATH = ROOT / _database_url.replace("sqlite:///", "").lstrip("/")
 
 VISION_PROVIDER = os.getenv("VISION_PROVIDER", "demo")

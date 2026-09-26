@@ -1,9 +1,10 @@
-"""SQLite persistence layer (stdlib only)."""
+"""Persistence layer: SQLite locally, PostgreSQL (Neon/Render) in the cloud."""
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
-from .config import DATABASE_PATH
+from .config import DATABASE_PATH, IS_POSTGRES
+from . import pgcompat
 
 SCHEMA = """
 PRAGMA journal_mode=WAL;
@@ -11,7 +12,7 @@ PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('customer','collector','recycler','admin')),
   phone TEXT,
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS waste_items (
 
 CREATE TABLE IF NOT EXISTS pickup_requests (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  code TEXT UNIQUE NOT NULL,
+  code TEXT NOT NULL,
   customer_id INTEGER NOT NULL REFERENCES users(id),
   collector_id INTEGER REFERENCES users(id),
   status TEXT NOT NULL DEFAULT 'pending'
@@ -91,7 +92,7 @@ CREATE TABLE IF NOT EXISTS pickup_items (
 
 CREATE TABLE IF NOT EXISTS transactions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  pickup_id INTEGER UNIQUE NOT NULL REFERENCES pickup_requests(id),
+  pickup_id INTEGER NOT NULL REFERENCES pickup_requests(id),
   customer_id INTEGER NOT NULL,
   collector_id INTEGER NOT NULL,
   total_weight REAL NOT NULL,
@@ -159,6 +160,8 @@ CREATE TABLE IF NOT EXISTS route_assignments (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pickups_code ON pickup_requests(code);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_pickups_status ON pickup_requests(status);
 CREATE INDEX IF NOT EXISTS idx_pickups_customer ON pickup_requests(customer_id);
 CREATE INDEX IF NOT EXISTS idx_pickups_collector ON pickup_requests(collector_id);
@@ -178,6 +181,11 @@ def get_connection() -> sqlite3.Connection:
 
 @contextmanager
 def db():
+    """Yield a connection that behaves identically in both dialects."""
+    if IS_POSTGRES:
+        with pgcompat.pg_db() as pg:
+            yield _PgCompat(pg)
+        return
     conn = get_connection()
     try:
         yield conn
@@ -189,9 +197,48 @@ def db():
         conn.close()
 
 
+class _PgCompat:
+    """Cursor-like facade so API code can call conn.execute(...) unchanged."""
+
+    def __init__(self, conn):
+        self._conn = conn
+
+    def execute(self, sql, params=()):
+        cur = self._conn.cursor()
+        cur.execute(pgcompat.q(sql), tuple(params))
+        return cur
+
+    def executescript(self, script):
+        pgcompat.init_pg(script)
+
+
+_DIALECT_INITIALIZED = {"v": None}
+
+
 def init_db() -> None:
-    with db() as conn:
-        conn.executescript(SCHEMA)
+    """Create tables once per dialect (safe to call repeatedly)."""
+    key = "pg" if IS_POSTGRES else "sqlite"
+    if _DIALECT_INITIALIZED["v"] == key:
+        return
+    if IS_POSTGRES:
+        pgcompat.init_pg(SCHEMA)
+    else:
+        conn = get_connection()
+        try:
+            conn.executescript(SCHEMA)
+            conn.commit()
+        finally:
+            conn.close()
+    _DIALECT_INITIALIZED["v"] = key
+
+
+def insert_id(conn, sql: str, params: tuple = ()) -> int:
+    """INSERT and return the new row id in both dialects."""
+    if IS_POSTGRES:
+        cur = conn.execute(sql + " RETURNING id", params)
+        return int(cur.fetchone()["id"])
+    cur = conn.execute(sql, params)
+    return int(cur.lastrowid)
 
 
 def row_dict(row) -> dict:

@@ -1,12 +1,13 @@
 """Deterministic demo seed: builds the full Ahmedabad demo city.
 
+Works on SQLite (local) and PostgreSQL/Neon (cloud).
 Run:  python backend/run.py --seed [--fresh]
 """
 import random
 from datetime import datetime, timedelta
 
-from .config import DEMO_CITY_CENTER
-from .database import db, init_db
+from .config import DEMO_CITY_CENTER, IS_POSTGRES
+from .database import db, init_db, insert_id
 from .security import hash_password
 from .services.catalog import MATERIALS
 from .services.demo_data import (COLLECTOR_BUSINESSES, PAYMENTS, VEHICLES, ZONES,
@@ -28,16 +29,21 @@ def seed(fresh: bool = False) -> None:
     init_db()
     random.seed(26229)
     with db() as conn:
-        if fresh:
+        if fresh and not IS_POSTGRES:
             for table in ["route_assignments", "impact_records", "ratings", "notifications",
                           "transactions", "pickup_items", "pickup_requests", "recycling_centers",
                           "collector_locations", "recyclers", "collectors", "waste_items", "users"]:
                 conn.execute(f"DROP TABLE IF EXISTS {table}")
-            conn.commit()
             init_db()
 
-        if conn.execute("SELECT COUNT(*) n FROM users").fetchone()["n"] > 0:
-            print("Database already seeded — skipping (use --fresh to rebuild).")
+        if IS_POSTGRES:
+            conn.execute("SELECT pg_advisory_xact_lock(26229)")
+            have = conn.execute("SELECT COUNT(*) AS n FROM users").fetchone()
+            count = int(have["n"] if not isinstance(have, dict) else have.get("n", 0))
+        else:
+            count = conn.execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
+        if count > 0:
+            print("Database already seeded — skipping (use --fresh locally to rebuild).")
             return
 
         pw = hash_password("demo123")
@@ -55,11 +61,11 @@ def seed(fresh: bool = False) -> None:
         ]
         ids = {}
         for name, email, role, addr, zone, lat, lng in demo_users:
-            cur = conn.execute(
+            ids[role] = insert_id(
+                conn,
                 "INSERT INTO users (name, email, password_hash, role, phone, address, zone,"
                 " lat, lng) VALUES (?,?,?,?,?,?,?,?,?)",
                 (name, email, pw, role, rand_phone(), addr, zone, lat, lng))
-            ids[role] = cur.lastrowid
 
         conn.execute(
             "INSERT INTO collectors (user_id, business_name, rating, completed_pickups,"
@@ -100,11 +106,12 @@ def seed(fresh: bool = False) -> None:
             email = f"household{i + 1:04d}@demo.ahmedabad"
             zone, zlat, zlng = rand_zone()
             lat, lng = jitter(zlat, zlng)
-            cur = conn.execute(
+            uid = insert_id(
+                conn,
                 "INSERT INTO users (name, email, password_hash, role, phone, address, zone,"
                 " lat, lng) VALUES (?,?,?,?,?,?,?,?,?)",
                 (name, email, pw, "customer", rand_phone(), rand_address(zone), zone, lat, lng))
-            customer_ids.append((cur.lastrowid, lat, lng, zone))
+            customer_ids.append((uid, lat, lng, zone))
 
         # Collectors (first ~15 named businesses; the rest individual names)
         collector_ids = []
@@ -118,15 +125,15 @@ def seed(fresh: bool = False) -> None:
             email = f"collector{i + 1:03d}@demo.ahmedabad"
             zone, zlat, zlng = rand_zone()
             lat, lng = jitter(zlat, zlng, 0.015)
-            cur = conn.execute(
+            uid = insert_id(
+                conn,
                 "INSERT INTO users (name, email, password_hash, role, phone, address, zone,"
                 " lat, lng) VALUES (?,?,?,?,?,?,?,?,?)",
                 (person, email, pw, "collector", rand_phone(), rand_address(zone), zone, lat, lng))
-            uid = cur.lastrowid
             mats = random.sample(
                 ["Paper", "Plastic", "Metal", "Cardboard", "E-waste", "Glass"],
                 k=random.randint(3, 6))
-            cur2 = conn.execute(
+            conn.execute(
                 "INSERT INTO collectors (user_id, business_name, rating, completed_pickups,"
                 " kg_collected, earnings, verified, vehicle, available, materials, eta_minutes)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
@@ -147,17 +154,17 @@ def seed(fresh: bool = False) -> None:
                 (name, email, pw, "recycler", rand_phone(),
                  f"Plot {random.randint(2, 60)}, GIDC Phase-II, Ahmedabad",
                  random.choice(ZONES)[0], 22.99, 72.64))
+            rid = cur.fetchone()["id"] if IS_POSTGRES else cur.lastrowid
             conn.execute(
                 "INSERT INTO recyclers (user_id, facility_name, capacity_tons) VALUES (?,?,?)",
-                (cur.lastrowid, name, float_between(40, 150, 0)))
-            recycler_ids.append(cur.lastrowid)
+                (rid, name, float_between(40, 150, 0)))
+            recycler_ids.append(rid)
 
         # Pickup history: ~78% completed, rest spread across other statuses.
         statuses = (["completed"] * 975 + ["pending"] * 90 + ["accepted"] * 55 +
                     ["on_the_way"] * 45 + ["collected"] * 43 + ["cancelled"] * 40)
         random.shuffle(statuses)
 
-        now = datetime.now()
         for i, status in enumerate(statuses):
             cust_id, clat, clng, zone = random.choice(customer_ids)
             created = START_DATE + timedelta(
@@ -175,14 +182,15 @@ def seed(fresh: bool = False) -> None:
             if status != "pending":
                 col_id = random.choice(collector_ids)[0]
                 accepted_at = (created + timedelta(minutes=random.randint(5, 90))).isoformat(" ")
-            if status in ("collected", "completed", "cancelled") and status != "cancelled":
+            if status in ("collected", "completed") :
                 actual_w = round(est_weight * random.uniform(0.85, 1.15), 1)
             if status == "completed":
                 completed_at = (created + timedelta(hours=random.randint(2, 30))).isoformat(" ")
                 final_v = float_between(90, 1400, 2)
                 payment = random.choice(PAYMENTS)
 
-            cur = conn.execute(
+            pid = insert_id(
+                conn,
                 "INSERT INTO pickup_requests (code, customer_id, collector_id, status, address,"
                 " zone, lat, lng, estimated_weight, actual_weight, estimated_value_min,"
                 " estimated_value_max, final_value, payment_method, notes, ai_confidence,"
@@ -191,7 +199,6 @@ def seed(fresh: bool = False) -> None:
                 (code, cust_id, col_id, status, rand_address(zone), zone, clat, clng,
                  est_weight, actual_w, est_min, est_max, final_v, payment, None, None,
                  created.isoformat(" "), accepted_at, completed_at, None))
-            pid = cur.lastrowid
 
             per = est_weight / len(cats)
             for c in cats:
@@ -226,7 +233,11 @@ def seed(fresh: bool = False) -> None:
         demo_cust = ids["customer"]
         completed_rows = conn.execute(
             "SELECT id FROM pickup_requests WHERE status='completed' LIMIT 300").fetchall()
-        chosen = [r["id"] for r in random.sample(completed_rows, min(90, len(completed_rows)))]
+
+        def _id(r):
+            return r["id"] if not isinstance(r, dict) else r.get("id")
+
+        chosen = [_id(r) for r in random.sample(list(completed_rows), min(90, len(list(completed_rows))))]
         marks = ",".join("?" * len(chosen))
         conn.execute(f"UPDATE pickup_requests SET collector_id=? WHERE id IN ({marks})",
                      (demo_col, *chosen))
@@ -236,7 +247,7 @@ def seed(fresh: bool = False) -> None:
         cust_rows = conn.execute(
             "SELECT id FROM pickup_requests WHERE status='completed' AND customer_id<>? LIMIT 100",
             (demo_cust,)).fetchall()
-        cchosen = [r["id"] for r in random.sample(cust_rows, min(6, len(cust_rows)))]
+        cchosen = [_id(r) for r in random.sample(list(cust_rows), min(6, len(list(cust_rows))))]
         cmarks = ",".join("?" * len(cchosen))
         conn.execute(f"UPDATE pickup_requests SET customer_id=? WHERE id IN ({cmarks})",
                      (demo_cust, *cchosen))
@@ -247,14 +258,14 @@ def seed(fresh: bool = False) -> None:
         for st in ("accepted", "on_the_way"):
             zone, zlat, zlng = "Satellite", 23.0276, 72.5073
             lat, lng = jitter(zlat, zlng, 0.008)
-            cur = conn.execute(
+            pid = insert_id(
+                conn,
                 "INSERT INTO pickup_requests (code, customer_id, collector_id, status, address,"
                 " zone, lat, lng, estimated_weight, estimated_value_min, estimated_value_max,"
                 " created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,datetime('now'))",
                 (f"KC-2026-{1000 + N_PICKUPS + 1 + (st == 'on_the_way'):05d}", demo_cust,
                  demo_col, st, rand_address(zone), zone, lat, lng,
                  float_between(6, 14, 1), 120, 190))
-            pid = cur.lastrowid
             for c in ("cardboard", "plastic"):
                 conn.execute(
                     "INSERT INTO pickup_items (pickup_id, category, estimated_weight, rate_per_kg)"
@@ -289,15 +300,15 @@ def seed(fresh: bool = False) -> None:
                     " VALUES (?,?,?,?,0,datetime('now'))", (uid, title, body, kind))
 
         # Rating rows sprinkled on some completed pickups.
-        completed_rows = conn.execute(
+        rated = conn.execute(
             "SELECT id, customer_id, collector_id FROM pickup_requests WHERE status='completed'"
             " LIMIT 400").fetchall()
-        for r in completed_rows:
+        for r in rated:
             if random.random() < 0.7:
                 conn.execute(
                     "INSERT INTO ratings (pickup_id, customer_id, collector_id, stars, comment)"
                     " VALUES (?,?,?,?,?)",
-                    (r["id"], r["customer_id"], r["collector_id"],
+                    (_id(r), r["customer_id"], r["collector_id"],
                      random.choice([4, 5, 5, 5, 4, 3]), "Smooth pickup, fair price."))
 
     print(f"Seeded demo database: {N_CUSTOMERS} customers, {N_COLLECTORS} collectors, "

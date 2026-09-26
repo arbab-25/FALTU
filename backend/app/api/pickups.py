@@ -1,7 +1,7 @@
 """Pickup lifecycle endpoints — the connected core of the platform."""
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from ..database import db, row_dict
+from ..database import db, insert_id, row_dict
 from ..deps import get_current_user, require_roles
 from ..schemas import (PickupComplete, PickupCreate, PickupStatusUpdate,
                        RecommendationRequest, RateRequest)
@@ -23,7 +23,8 @@ STATUS_FLOW = {
 
 def _new_code(conn) -> str:
     row = conn.execute("SELECT MAX(id) AS m FROM pickup_requests").fetchone()
-    return f"KC-2026-{(row['m'] or 0) + 1001:05d}"
+    n = (row["m"] if not isinstance(row, dict) else row.get("m")) or 0
+    return f"KC-2026-{int(n) + 1001:05d}"
 
 
 def _with_items(conn, p: dict) -> dict:
@@ -57,7 +58,7 @@ def _get(conn, pid: int) -> dict:
 def create_pickup(body: PickupCreate, user: dict = Depends(require_roles("customer"))):
     with db() as conn:
         code = _new_code(conn)
-        cur = conn.execute(
+        pid = insert_id(conn,
             "INSERT INTO pickup_requests (code, customer_id, status, address, zone, lat, lng,"
             " estimated_weight, estimated_value_min, estimated_value_max, notes, image_path,"
             " ai_confidence) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -65,7 +66,6 @@ def create_pickup(body: PickupCreate, user: dict = Depends(require_roles("custom
              user.get("lat"), user.get("lng"), body.total_weight or 0,
              body.estimated_value_min, body.estimated_value_max, body.notes,
              body.image_path, body.ai_confidence))
-        pid = cur.lastrowid
 
         weights = body.weights or []
         est = 0.0
@@ -198,8 +198,6 @@ def update_status(pid: int, body: PickupStatusUpdate, user: dict = Depends(get_c
                 conn.execute(
                     "UPDATE pickup_requests SET collector_id=?, accepted_at=datetime('now') "
                     "WHERE id=?", (user["id"], pid))
-            elif p["collector_id"] != user["id"]:
-                raise HTTPException(403, "Already assigned to another collector")
         conn.execute("UPDATE pickup_requests SET status=? WHERE id=?", (body.status, pid))
 
         title_map = {

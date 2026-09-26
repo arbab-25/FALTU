@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .config import APP_NAME, UPLOAD_DIR
+from .config import APP_NAME, IS_POSTGRES, UPLOAD_DIR
 from .database import init_db
 from .api import admin, auth, collectors, impact, notifications, pickups, waste
 
@@ -38,6 +38,20 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     def on_startup():
         init_db()
+        # Auto-provision demo data on cloud databases (Neon/Render).
+        if IS_POSTGRES:
+            import threading
+
+            def _seed_bg():
+                try:
+                    from .seed import seed
+
+                    seed(fresh=False)
+                    log.info("Cloud database seeded with demo data")
+                except Exception:
+                    log.exception("Auto-seed failed (non-fatal)")
+
+            threading.Thread(target=_seed_bg, daemon=True).start()
         log.info("%s backend ready", APP_NAME)
 
     app.include_router(auth.router, prefix="/api")

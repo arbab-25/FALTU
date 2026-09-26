@@ -31,7 +31,7 @@ def dashboard(user: dict = Depends(require_roles("collector"))):
         month = conn.execute(
             "SELECT COALESCE(SUM(total_amount),0) v, COALESCE(SUM(total_weight),0) w"
             " FROM transactions WHERE collector_id=? AND created_at>=date('now','start of month')",
-            (user["id"],)).fetchone()
+            (user["id"],)).fetchone()  # date('now','start of month') translated for PG in pgcompat.q
         today = conn.execute(
             "SELECT COALESCE(SUM(total_amount),0) v, COALESCE(SUM(total_weight),0) w,"
             " COUNT(*) n FROM transactions WHERE collector_id=? AND date(created_at)=date('now')",
