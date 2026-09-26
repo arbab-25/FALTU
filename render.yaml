@@ -7,7 +7,6 @@
 #
 # Deploy: Render Dashboard → New + → Blueprint → pick this repo.
 # Paste your Neon connection string when prompted for DATABASE_URL.
-# (Neon → Dashboard → Connection string → Prisma/psycopg2 format works.)
 
 services:
   # ---------------- FastAPI backend ----------------
@@ -16,9 +15,7 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: |
-      pip install --upgrade pip &&
-      pip install -r ../requirements.txt psycopg2-binary
+    buildCommand: pip install --upgrade pip && pip install -r ../requirements.txt psycopg2-binary
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     autoDeploy: true
@@ -33,10 +30,8 @@ services:
         value: 3.12.6
       - key: APP_NAME
         value: Kabadiwala Connect
-    cors:
-      allowedOrigins:
-        - https://kabadiwala-web.onrender.com
-        - http://localhost:5173
+      - key: CORS_ORIGINS
+        value: https://kabadiwala-web.onrender.com,http://localhost:5173
 
   # ---------------- React frontend (static site) ----------------
   - type: web
@@ -57,4 +52,3 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         value: https://kabadiwala-api.onrender.com/api
-    envSync: false

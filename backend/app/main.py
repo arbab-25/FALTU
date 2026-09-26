@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import APP_NAME, IS_POSTGRES, UPLOAD_DIR
+import os
 from .database import init_db
 from .api import admin, auth, collectors, impact, notifications, pickups, waste
 
@@ -27,9 +28,12 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json",
     )
 
+    cors_origins = [
+        o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()
+    ] or ["*"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=cors_origins,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
