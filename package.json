@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Smart India Hackathon 2026 · SIH26229 · Kabadiwala Connect",
+  "description": "Smart India Hackathon 2026 \u00b7 SIH26229 \u00b7 Kabadiwala Connect",
   "scripts": {
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "vite --port 5173 --host",
@@ -14,6 +14,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@neon/config": "^1.8.2",
+    "@neon/env": "^1.4.7",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.7.0",
@@ -26,8 +28,6 @@
     "vite": "^6.4.3"
   },
   "dependencies": {
-    "@neon/config": "^1.8.2",
-    "@neon/env": "^1.4.7",
     "lucide-react": "^0.454.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

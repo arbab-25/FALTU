@@ -4,10 +4,9 @@ import {
   Flag, MapPin, Navigation, Package, RefreshCw, Route as RouteIcon, Save,
 } from 'lucide-react';
 import { api } from '@/services/api';
-import type { Pickup, RoutePlan } from '@/types';
+import type { CollectorCard, Pickup, RoutePlan } from '@/types';
 import { DemoMap, Empty, MaterialChip } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
-import type { CollectorCard } from '@/types';
 
 export default function RoutePlanner() {
   const { user } = useAuth();

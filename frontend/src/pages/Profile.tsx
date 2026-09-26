@@ -93,7 +93,9 @@ export default function Profile() {
       )}
 
       <p className="text-center text-[11px] text-neutral-400">
-        Member since {formatDate((user as unknown as { created_at?: string }).created_at) || '2024'} · demo data
+        Member since {(user as unknown as { created_at?: string }).created_at
+          ? formatDate((user as unknown as { created_at?: string }).created_at)
+          : '2024'} · demo data
       </p>
     </div>
   );

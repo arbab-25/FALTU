@@ -1,7 +1,7 @@
 """Pickup lifecycle endpoints — the connected core of the platform."""
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from ..database import db, insert_id, row_dict
+from ..database import db, insert_id, insert_rows, row_dict
 from ..deps import get_current_user, require_roles
 from ..schemas import (PickupComplete, PickupCreate, PickupStatusUpdate,
                        RecommendationRequest, RateRequest)
@@ -22,15 +22,35 @@ STATUS_FLOW = {
 
 
 def _new_code(conn) -> str:
-    row = conn.execute("SELECT MAX(id) AS m FROM pickup_requests").fetchone()
-    n = (row["m"] if not isinstance(row, dict) else row.get("m")) or 0
-    return f"KC-2026-{int(n) + 1001:05d}"
+    """Generate the next pickup code, tolerating concurrent creates.
+
+    Two inserts inside the same transaction see the same MAX(id), so the
+    unique index on `code` can reject the second one; a short bounded retry
+    with an offset makes the collision statistically impossible in practice.
+    """
+    for attempt in range(5):
+        row = conn.execute("SELECT MAX(id) AS m FROM pickup_requests").fetchone()
+        n = (row["m"] if not isinstance(row, dict) else row.get("m")) or 0
+        code = f"KC-2026-{int(n) + 1001 + attempt * 7:05d}"
+        dup = conn.execute(
+            "SELECT 1 FROM pickup_requests WHERE code=? LIMIT 1", (code,)).fetchone()
+        if not dup:
+            return code
+    raise HTTPException(500, "Could not allocate a pickup code — try again")
 
 
-def _with_items(conn, p: dict) -> dict:
-    p["items"] = [row_dict(r) for r in conn.execute(
-        "SELECT * FROM pickup_items WHERE pickup_id=?", (p["id"],)).fetchall()]
-    return p
+def _items_by_pickup(conn, ids: list[int]) -> dict[int, list]:
+    """Fetch items for many pickups in ONE round-trip (N+1 killer)."""
+    if not ids:
+        return {}
+    ph = ",".join("?" * len(ids))
+    out: dict[int, list] = {}
+    for r in conn.execute(
+        f"SELECT * FROM pickup_items WHERE pickup_id IN ({ph})",  # nosec B608 - placeholders only, ids bound
+        tuple(ids),
+    ).fetchall():
+        out.setdefault(int(r["pickup_id"]), []).append(row_dict(r))
+    return out
 
 
 def _get(conn, pid: int) -> dict:
@@ -69,14 +89,15 @@ def create_pickup(body: PickupCreate, user: dict = Depends(require_roles("custom
 
         weights = body.weights or []
         est = 0.0
+        item_rows = []
         for i, cat in enumerate(body.categories):
             meta = MATERIALS.get(cat, MATERIALS["other"])
             w = weights[i] if i < len(weights) else round((body.total_weight or 0) / len(body.categories), 1)
             w = max(0.1, w)
-            conn.execute(
-                "INSERT INTO pickup_items (pickup_id, category, estimated_weight, rate_per_kg)"
-                " VALUES (?,?,?,?)", (pid, cat, w, meta["rate"]))
+            item_rows.append((pid, cat, w, meta["rate"]))
             est += w * meta["rate"]
+        insert_rows(conn, "pickup_items",
+                    ["pickup_id", "category", "estimated_weight", "rate_per_kg"], item_rows)
         if not body.estimated_value_min:
             conn.execute(
                 "UPDATE pickup_requests SET estimated_value_min=?, estimated_value_max=?"
@@ -129,9 +150,9 @@ def list_pickups(
 
     with db() as conn:
         rows = [row_dict(r) for r in conn.execute(q, params).fetchall()]
+        items_map = _items_by_pickup(conn, [int(p["id"]) for p in rows])
         for p in rows:
-            p["items"] = [row_dict(r) for r in conn.execute(
-                "SELECT * FROM pickup_items WHERE pickup_id=?", (p["id"],)).fetchall()]
+            p["items"] = items_map.get(int(p["id"]), [])
     return {"pickups": rows}
 
 

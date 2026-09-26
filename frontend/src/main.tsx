@@ -50,7 +50,7 @@ function RequireRole({ role, children }: { role: string; children: React.ReactEl
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter>
       <LanguageProvider>
         <AuthProvider>
           <NotificationProvider>
