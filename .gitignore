@@ -1,0 +1,15 @@
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+*.db
+*.sqlite
+backend/uploads/*
+!backend/uploads/.gitkeep
+.DS_Store
+*.log
+.freebuff/
+frontend/dist/

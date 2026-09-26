@@ -1,0 +1,34 @@
+{
+  "name": "kabadiwala-connect",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Smart India Hackathon 2026 · SIH26229 · Kabadiwala Connect",
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:frontend dev:backend",
+    "dev:frontend": "vite --port 5173 --host",
+    "dev:backend": "python backend/run.py",
+    "seed": "python backend/run.py --seed",
+    "seed:fresh": "python backend/run.py --seed --fresh",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.6.1",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "dependencies": {
+    "lucide-react": "^0.454.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "recharts": "^2.13.3"
+  }
+}

@@ -1,0 +1,93 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-neutral-100 text-ink font-sans;
+  }
+  ::selection {
+    @apply bg-brand-600/20;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-brand-500/70 ring-offset-1;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-300 rounded-full border-2 border-solid border-transparent bg-clip-content;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-400;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl border border-neutral-200/80 shadow-soft;
+  }
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lift hover:-translate-y-0.5 hover:border-brand-300;
+  }
+  .input {
+    @apply w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-neutral-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 transition;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm px-4 py-2.5 transition-all duration-150 active:scale-[.98] disabled:opacity-50 disabled:pointer-events-none select-none;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 shadow-[0_1px_2px_rgba(5,150,105,.4)] hover:shadow-pop;
+  }
+  .btn-dark {
+    @apply btn bg-ink text-white hover:bg-neutral-800;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink hover:bg-neutral-100 border border-transparent;
+  }
+  .btn-outline {
+    @apply btn bg-white border border-neutral-300 text-ink hover:border-brand-400 hover:text-brand-700 hover:bg-brand-50/50;
+  }
+  .btn-danger {
+    @apply btn bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold;
+  }
+  .label {
+    @apply block text-[13px] font-semibold text-ink mb-1.5;
+  }
+  .kpi {
+    @apply font-display text-3xl md:text-[34px] font-bold tracking-tight text-ink;
+  }
+  .th {
+    @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 bg-neutral-50 border-b border-neutral-200;
+  }
+  .td {
+    @apply px-4 py-3 text-sm text-ink border-b border-neutral-100;
+  }
+  .skeleton {
+    @apply relative overflow-hidden bg-neutral-200/70 rounded-lg;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/70 to-transparent;
+    animation: shimmer 1.6s infinite;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+#root { min-height: 100vh; }
+
+.flow-link { stroke-dasharray: 6 5; animation: flowdash 1.4s linear infinite; }
+@keyframes flowdash { to { stroke-dashoffset: -22; } }
