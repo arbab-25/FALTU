@@ -23,13 +23,18 @@ def _haversine_km(lat1, lng1, lat2, lng2) -> float:
     return 2 * r * math.asin(math.sqrt(a))
 
 
-def _active_load(conn, collector_id: int) -> int:
-    row = conn.execute(
-        "SELECT COUNT(*) AS n FROM pickup_requests WHERE collector_id=? "
-        "AND status IN ('accepted','on_the_way')",
-        (collector_id,),
-    ).fetchone()
-    return int(row["n"]) if row else 0
+def _active_loads(conn) -> dict[int, int]:
+    """Active pickup count for every collector in ONE grouped query.
+
+    Per-collector queries cost one round-trip each (~0.25 s on the Neon
+    pooler) — fatal for ~150 collectors. A single GROUP BY is one trip.
+    """
+    rows = conn.execute(
+        "SELECT collector_id, COUNT(*) AS n FROM pickup_requests"
+        " WHERE status IN ('accepted','on_the_way') AND collector_id IS NOT NULL"
+        " GROUP BY collector_id"
+    ).fetchall()
+    return {int(r["collector_id"]): int(r["n"]) for r in rows}
 
 
 def score_collectors(
@@ -50,7 +55,7 @@ def score_collectors(
             " JOIN collector_locations l ON l.collector_id=c.user_id"
             " WHERE u.role='collector'"
         ).fetchall()
-        loads = {r["id"]: _active_load(conn, r["id"]) for r in rows}
+        loads = _active_loads(conn)
 
     results = []
     for row in rows:

@@ -167,6 +167,30 @@ All environmental figures are **estimates**: `CO₂e avoided = weight × per-mat
 - Upload restrictions: type allowlist, 8 MB cap, safe filenames, files deleted after analysis
 - No secrets in frontend; `.env.example` documents every variable
 
+## ✅ Quality Pipelines (all green)
+
+Every cycle is validated with real tooling — run these yourself:
+
+| Pipeline | Command | Latest result |
+|---|---|---|
+| TypeScript (strict) | `npx tsc --noEmit` | 0 errors |
+| Security lint (Python) | `bandit -r backend/app` | 0 issues (all severities) |
+| Dependency audit (npm) | `npm audit --omit=dev` | 0 vulnerabilities |
+| Dependency consistency | `pip check` | no broken requirements |
+| Dead code / imports | `pyflakes backend/app` | clean |
+| API regression suite | `python backend/selftest.py [--base URL]` | **32/32 PASS** on SQLite **and** Neon Postgres |
+| Accessibility (WCAG 2.1 AA) | axe-core audit of live pages | 0 violations (landing, login, dashboards) |
+| Production build | `npm run build` | clean; vendor-split bundles (react 166 kB / app 199 kB / charts 422 kB gzip ≈ 216 kB total) |
+| End-to-end journey | scripted login → pickup → accept → complete → receipt → impact | verified on both dialects |
+
+**Cloud-database performance work** (measured against real Neon Postgres):
+
+- Seeding: ~6,300 individual inserts → multi-row batched `insert_rows` (2,850 users in **2.6 s**, full seed **~103 s**)
+- Matching/route: per-row N+1 queries → single grouped / `IN` queries (**37.7 s → ~2 s** from a remote client; the residual is client↔Neon RTT, not server work)
+- Connections: per-request open/close → persistent thread-local connections with health-check reconnect (was ~4.5 s/request; on co-located hosts like Render it's milliseconds)
+
+The two remaining `npm audit` moderates are in `react-router` (SSR open-redirect / deserialization) and do not apply: this app is a static SPA with no SSR and no navigation to user-supplied URLs. Upgrade to v7 is tracked under future scope.
+
 ## 🌍 Accessibility & i18n
 
 Semantic HTML, ARIA labels, keyboard navigation, focus rings, ESC-closable dialogs, responsive from 390 px to 4K. Language switcher: **English / हिन्दी / ગુજરાતી** via a translation architecture (`LanguageContext`), not hard-coded strings.

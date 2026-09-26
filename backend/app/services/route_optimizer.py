@@ -24,15 +24,18 @@ def _speed_kmh() -> float:
 
 def optimize_route(pickup_ids: list[int]) -> dict:
     with db() as conn:
-        stops = []
-        for pid in pickup_ids:
-            row = conn.execute(
-                "SELECT id, code, address, zone, lat, lng, estimated_weight,"
-                " estimated_value_min, estimated_value_max FROM pickup_requests WHERE id=?",
-                (pid,),
-            ).fetchone()
-            if row:
-                stops.append(row_dict(row))
+        # ONE round-trip for all stops (per-id queries cost ~0.25 s each on the
+        # Neon pooler — an N+1 that made this endpoint take minutes).
+        uniq = list(dict.fromkeys(pickup_ids))
+        ph = ",".join("?" * len(uniq))
+        rows = conn.execute(
+            "SELECT id, code, address, zone, lat, lng, estimated_weight,"
+            " estimated_value_min, estimated_value_max FROM pickup_requests"
+            f" WHERE id IN ({ph})",  # nosec B608 - ph is placeholder commas only; ids are bound params
+            tuple(uniq),
+        ).fetchall()
+        by_id = {int(r["id"]): r for r in rows}
+        stops = [by_id[pid] for pid in uniq if pid in by_id]
         centers = [row_dict(r) for r in conn.execute(
             "SELECT * FROM recycling_centers ORDER BY id"
         ).fetchall()]

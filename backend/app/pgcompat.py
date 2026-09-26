@@ -11,8 +11,9 @@ Translation rules (applied by `q()`):
 - `datetime('now')`       → `to_char(now(), 'YYYY-MM-DD HH24:MI:SS')`
 - `date('now','start of month')` → `to_char(date_trunc('month', now()), 'YYYY-MM-DD')`
 """
-import re  # noqa: F401  (kept for future pattern-based translations)
 from contextlib import contextmanager
+import atexit
+import threading
 
 from .config import DATABASE_URL, IS_POSTGRES
 
@@ -53,16 +54,56 @@ def connect():
 
 @contextmanager
 def pg_db():
-    """Postgres variant of the database.db() context manager."""
-    conn = connect()
+    """Postgres variant of the database.db() context manager.
+
+    Connections are PERSISTENT per thread (thread-local) and reused across
+    requests: opening a fresh Neon TLS connection costs seconds through the
+    pooler, which made every endpoint pay ~4.5 s. Stale/idle connections are
+    detected via a cheap `SELECT 1` health check and transparently replaced.
+    """
+    conn = _checkout()
     try:
         yield conn
         conn.commit()
     except Exception:
-        conn.rollback()
+        from psycopg2 import OperationalError, InterfaceError
+        try:
+            conn.rollback()
+        except (OperationalError, InterfaceError):
+            _discard()
         raise
-    finally:
-        conn.close()
+
+
+_tls = threading.local()
+
+
+def _checkout():
+    """Return a live thread-local connection, reconnecting when stale."""
+    conn = getattr(_tls, "conn", None)
+    if conn is not None:
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT 1")
+            cur.close()
+            return conn
+        except Exception:
+            _discard()
+    conn = connect()
+    _tls.conn = conn
+    return conn
+
+
+def _discard() -> None:
+    conn = getattr(_tls, "conn", None)
+    _tls.conn = None
+    if conn is not None:
+        try:
+            conn.close()
+        except Exception:  # nosec B110 - best-effort teardown; nothing to recover to
+            pass
+
+
+atexit.register(_discard)
 
 
 def insert_returning_id(conn, sql: str, params: tuple) -> int:

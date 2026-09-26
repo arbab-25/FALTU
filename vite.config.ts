@@ -22,5 +22,13 @@ export default defineConfig({
   build: {
     outDir: 'frontend/dist',
     chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+        },
+      },
+    },
   },
 });
