@@ -75,6 +75,30 @@ Use the same demo accounts (seeded into Neon automatically):
 
 ## Troubleshooting
 
+### "Backend not working / data not stored / frontend out of sync"
+
+The #1 cause: **two different apps claim the same Render service name.** The site at
+`https://kabadiwala-api.onrender.com` may be serving a *different* project (check
+`https://<api-name>.onrender.com/api/health` — our API always reports
+`"code_version": "1.0.0-sih26229"`; if you get anything else, that service is not ours).
+
+Fix (Render Dashboard):
+1. Open the **kabadiwala-api** service → **Settings** → verify **Repo** = `arbab-25/FALTU`
+   and **Branch** = `main`. If it points elsewhere, the name collision is the problem —
+   **rename our service** (Settings → Name) to something unique like `faltu-sih-api`, then
+   update `VITE_API_BASE_URL` on the frontend to `https://faltu-sih-api.onrender.com/api`
+   and **Manual Deploy** the frontend.
+2. Open **Environment** → confirm `DATABASE_URL` = your Neon `-pooler` string. If it's
+   missing, the API silently falls back to a throwaway local SQLite disk.
+3. **Manual Deploy → Deploy latest commit**, then check Logs for
+   `backend ready | database: postgresql (ep-…neon.tech)`.
+4. Visit `https://<api>.onrender.com/api/health` — you should see `code_version`,
+   `database: postgresql (…)`, and non-zero `counts`. That is the source of truth.
+
+The frontend now shows an amber banner automatically when the backend is unreachable or
+running the wrong app — if you see it, the URL in the banner is what the frontend is
+calling; make that service return `code_version: 1.0.0-sih26229`.
+
 | Symptom | Fix |
 |---|---|
 | API logs show `OperationalError: SSL required` | Your Neon URL lacks `sslmode=require` — the code adds it automatically, but verify you copied the full string. |

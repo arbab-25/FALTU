@@ -8,6 +8,7 @@ import {
   LogOut, Menu, Presentation, Recycle, Route, ShieldCheck, Trash2, Users, UserCircle, Wallet, X,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLang } from '@/context/LanguageContext';
 import type { Role } from '@/types';
 import NotificationBell from '@/components/NotificationBell';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
@@ -52,10 +53,22 @@ function TruckRouteIcon(props: { size?: number; className?: string }) {
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
   if (!user) return null;
   const nav = NAV[user.role];
+
+  const navLabel = (label: string) => {
+    const map: Record<string, string> = {
+      Dashboard: t('dashboard'), 'Schedule Pickup': t('schedulePickup'),
+      'My Pickups': t('myPickups'), Transactions: t('transactions'),
+      Impact: t('impact'), Profile: t('profile'),
+      'Pickup Requests': t('pickupRequests'), 'Active Pickups': t('activePickups'),
+      Earnings: t('earnings'), Route: t('route'), Customers: t('customers'),
+    };
+    return map[label] || label;
+  };
 
   const handleLogout = () => {
     logout();
@@ -83,7 +96,7 @@ export default function DashboardLayout() {
               ${isActive ? 'bg-brand-600 text-white shadow-[0_4px_14px_-4px_rgba(5,150,105,.5)]'
                 : 'text-ink-soft hover:bg-neutral-100 hover:text-ink'}`}>
             <item.icon size={17} strokeWidth={2} />
-            {item.label}
+            {navLabel(item.label)}
           </NavLink>
         ))}
       </nav>

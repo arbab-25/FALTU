@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import DashboardLayout from '@/layouts/DashboardLayout';
+import ApiStatusBanner from '@/components/ApiStatusBanner';
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
 import Impact from '@/pages/Impact';
@@ -56,6 +57,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <LanguageProvider>
         <AuthProvider>
           <NotificationProvider>
+            <ApiStatusBanner />
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, BarChart3, Factory, Info, Lock, Mail, Recycle, Truck, Users } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLang } from '@/context/LanguageContext';
 import type { Role } from '@/types';
 
 const DEMOS: { role: Role; icon: typeof Users; name: string; email: string; desc: string }[] = [
@@ -14,6 +15,7 @@ const DEMOS: { role: Role; icon: typeof Users; name: string; email: string; desc
 
 export default function Login() {
   const { login } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const preferred = params.get('role') as Role | null;
@@ -91,8 +93,8 @@ export default function Login() {
           </Link>
 
           <div className="card p-7">
-            <h2 className="font-display text-[22px] font-bold text-ink">Sign in</h2>
-            <p className="mt-1 text-[13.5px] text-ink-soft">Use a demo account to explore any role instantly.</p>
+            <h2 className="font-display text-[22px] font-bold text-ink">{t('signIn')}</h2>
+            <p className="mt-1 text-[13.5px] text-ink-soft">{t('demoLogin')} · demo123</p>
 
             <div className="mt-5 grid grid-cols-2 gap-2.5">
               {DEMOS.map((d) => (
@@ -137,7 +139,7 @@ export default function Login() {
               )}
 
               <button type="submit" disabled={busy} className="btn-primary w-full py-3">
-                {busy ? 'Signing in…' : 'Sign in'} <ArrowRight size={15} />
+                {busy ? '…' : t('signIn')} <ArrowRight size={15} />
               </button>
             </form>
 

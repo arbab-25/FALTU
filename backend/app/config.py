@@ -47,3 +47,14 @@ MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = {"image/png", "image/jpeg", "image/jpg", "image/webp"}
 
 DEMO_NOTE = "Demo data for SIH26229 prototype — indicative figures only, not verified."
+
+
+def database_label() -> str:
+    """Human-readable description of the active database (for diagnostics)."""
+    if not IS_POSTGRES:
+        return f"sqlite ({DATABASE_PATH.name})"
+    try:
+        host = _database_url.split("@", 1)[1].split("/", 1)[0]
+        return f"postgresql ({host})"
+    except Exception:
+        return "postgresql"

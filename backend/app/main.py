@@ -1,12 +1,13 @@
 """Kabadiwala Connect — FastAPI application entry point."""
 import logging
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .config import APP_NAME, IS_POSTGRES, UPLOAD_DIR
+from .config import APP_NAME, IS_POSTGRES, UPLOAD_DIR, database_label
 import os
 from .database import init_db
 from .api import admin, auth, collectors, impact, notifications, pickups, waste
@@ -56,7 +57,7 @@ def create_app() -> FastAPI:
                     log.exception("Auto-seed failed (non-fatal)")
 
             threading.Thread(target=_seed_bg, daemon=True).start()
-        log.info("%s backend ready", APP_NAME)
+        log.info("%s backend ready | database: %s", APP_NAME, database_label())
 
     app.include_router(auth.router, prefix="/api")
     app.include_router(waste.router, prefix="/api")
@@ -70,7 +71,26 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health")
     def health():
-        return {"ok": True, "app": APP_NAME}
+        """Diagnostic health: reports which backend code and DB are live."""
+        db_ok, db_err, counts = True, None, {}
+        try:
+            from .database import db
+            with db() as conn:
+                for tbl in ("users", "pickup_requests", "transactions"):
+                    n = conn.execute(f"SELECT COUNT(*) AS n FROM {tbl}").fetchone()
+                    counts[tbl] = int(n["n"] if not isinstance(n, dict) else (n.get("n") or 0))
+        except Exception as e:  # pragma: no cover - diagnostics only
+            db_ok, db_err = False, str(e)[:200]
+        return {
+            "ok": True,
+            "app": APP_NAME,
+            "code_version": "1.0.0-sih26229",
+            "database": database_label(),
+            "database_ok": db_ok,
+            "database_error": db_err,
+            "counts": counts,
+            "time": datetime.now(timezone.utc).isoformat(),
+        }
 
     @app.exception_handler(HTTPException)
     async def http_exc(request: Request, exc: HTTPException):

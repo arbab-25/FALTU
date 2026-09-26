@@ -9,10 +9,12 @@ import type { ImpactResponse, Pickup } from '@/types';
 import { formatINR, formatKg } from '@/utils/format';
 import { KpiCard, StatusBadge, TrackingTimeline, DemoMap, MaterialChip } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
+import { useLang } from '@/context/LanguageContext';
 import type { CollectorCard } from '@/types';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
+  const { t } = useLang();
   const [pickups, setPickups] = useState<Pickup[] | null>(null);
   const [impact, setImpact] = useState<ImpactResponse['totals'] | null>(null);
   const [collectors, setCollectors] = useState<CollectorCard[]>([]);
@@ -46,14 +48,14 @@ export default function CustomerDashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard icon={PackageCheck} label="Total Recycled" tone="brand"
+        <KpiCard icon={PackageCheck} label={t('totalRecycled')} tone="brand"
           value={impact ? formatKg(impact.weight_kg) : '—'}
-          sub={`${completed.length} pickups completed`} />
-        <KpiCard icon={Coins} label="Money Earned" tone="amber"
-          value={formatINR(earned)} sub="from completed pickups" />
-        <KpiCard icon={Leaf} label="CO₂ Impact (est.)" tone="blue"
-          value={impact ? formatKg(impact.co2_kg) : '—'} sub="CO₂e avoided" />
-        <KpiCard icon={Recycle} label="Pickups Completed" tone="violet"
+          sub={`${completed.length} ${t('pickupsCompleted').toLowerCase()}`} />
+        <KpiCard icon={Coins} label={t('moneyEarned')} tone="amber"
+          value={formatINR(earned)} sub={t('completed').toLowerCase()} />
+        <KpiCard icon={Leaf} label={t('co2Impact')} tone="blue"
+          value={impact ? formatKg(impact.co2_kg) : '—'} sub="CO₂e" />
+        <KpiCard icon={Recycle} label={t('pickupsCompleted')} tone="violet"
           value={completed.length} sub="lifetime" />
       </div>
 
@@ -61,7 +63,7 @@ export default function CustomerDashboard() {
         {/* Upcoming pickup */}
         <div className="card p-6 xl:col-span-3">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-[16px] font-bold text-ink">Upcoming Pickup</h2>
+            <h2 className="font-display text-[16px] font-bold text-ink">{t('upcomingPickup')}</h2>
             {upcoming && <StatusBadge status={upcoming.status} />}
           </div>
 
@@ -104,8 +106,8 @@ export default function CustomerDashboard() {
           ) : (
             <div className="flex flex-col items-center py-10 text-center">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600"><CalendarClock size={22} /></span>
-              <p className="mt-3 text-[14.5px] font-semibold text-ink">No upcoming pickup</p>
-              <p className="mt-1 text-[13px] text-ink-soft">Schedule one in under a minute.</p>
+              <p className="mt-3 text-[14.5px] font-semibold text-ink">{t('noUpcoming')}</p>
+              <p className="mt-1 text-[13px] text-ink-soft">{t('scheduleOne')}</p>
               <Link to="/app/schedule" className="btn-primary mt-4">Schedule Pickup</Link>
             </div>
           )}
@@ -114,7 +116,7 @@ export default function CustomerDashboard() {
         {/* Map */}
         <div className="xl:col-span-2">
           <div className="card h-full p-5">
-            <h2 className="mb-3 font-display text-[16px] font-bold text-ink">Collectors Near You</h2>
+            <h2 className="mb-3 font-display text-[16px] font-bold text-ink">{t('collectorsNearYou')}</h2>
             <DemoMap
               height={300}
               customer={user?.lat && user?.lng ? { lat: user.lat, lng: user.lng, label: 'You' } : null}
@@ -127,8 +129,8 @@ export default function CustomerDashboard() {
       {/* Recent */}
       <div className="card p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-[16px] font-bold text-ink">Recent Pickups</h2>
-          <Link to="/app/pickups" className="text-[13px] font-semibold text-brand-600 hover:underline">View all</Link>
+          <h2 className="font-display text-[16px] font-bold text-ink">{t('recentPickups')}</h2>
+          <Link to="/app/pickups" className="text-[13px] font-semibold text-brand-600 hover:underline">{t('viewAll')}</Link>
         </div>
         {!pickups ? (
           <div className="space-y-2">{[1, 2, 3].map((i) => <div key={i} className="skeleton h-12" />)}</div>

@@ -8,6 +8,7 @@ import {
 import { api } from '@/services/api';
 import type { AiAnalysis, CollectorCard, Pickup, ValueEstimate } from '@/types';
 import { useAuth } from '@/context/AuthContext';
+import { useLang } from '@/context/LanguageContext';
 import DemoMap from '@/components/ui/DemoMap';
 import MaterialChip from '@/components/ui/MaterialChip';
 import { formatINR } from '@/utils/format';
@@ -27,6 +28,7 @@ const STEPS = ['Waste Type', 'Weight & AI', 'Collector', 'Confirm'];
 
 export default function SchedulePickup() {
   const { user, refreshUser } = useAuth();
+  const { t } = useLang();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -130,7 +132,7 @@ export default function SchedulePickup() {
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-50 text-brand-600">
             <CheckCircle2 size={32} />
           </span>
-          <h1 className="mt-4 font-display text-2xl font-bold text-ink">Pickup Scheduled!</h1>
+          <h1 className="mt-4 font-display text-2xl font-bold text-ink">{t('pickupScheduled')}</h1>
           <p className="mt-1.5 text-[14px] text-ink-soft">
             <span className="num font-bold text-ink">{created.code}</span> · {created.address}
           </p>
@@ -178,8 +180,8 @@ export default function SchedulePickup() {
       {/* STEP 1 — waste types */}
       {step === 0 && (
         <section className="animate-fade-up" aria-label="Waste type">
-          <h1 className="font-display text-2xl font-bold text-ink">What type of waste do you have?</h1>
-          <p className="mt-1 text-[13.5px] text-ink-soft">Select all that apply — rates are demo reference values.</p>
+          <h1 className="font-display text-2xl font-bold text-ink">{t('whatWaste')}</h1>
+          <p className="mt-1 text-[13.5px] text-ink-soft">{t('selectAll')} — demo rates.</p>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {MATERIALS.map((m) => {
               const on = cats.includes(m.key);
@@ -197,7 +199,7 @@ export default function SchedulePickup() {
           <div className="mt-8 flex justify-between">
             <span />
             <button type="button" disabled={!cats.length} onClick={() => setStep(1)} className="btn-primary">
-              Next <ArrowRight size={15} />
+              {t('next')} <ArrowRight size={15} />
             </button>
           </div>
         </section>
@@ -207,12 +209,12 @@ export default function SchedulePickup() {
       {step === 1 && (
         <section className="animate-fade-up space-y-5" aria-label="Weight and AI estimation">
           <div>
-            <h1 className="font-display text-2xl font-bold text-ink">Approximately how much?</h1>
-            <p className="mt-1 text-[13.5px] text-ink-soft">Estimate manually or let the demo AI estimator help.</p>
+            <h1 className="font-display text-2xl font-bold text-ink">{t('howMuch')}</h1>
+            <p className="mt-1 text-[13.5px] text-ink-soft">{t('aiAnalysis')} · demo.</p>
           </div>
 
           <div className="card p-5">
-            <label htmlFor="weight" className="label">Manual estimate (kg)</label>
+            <label htmlFor="weight" className="label">{t('manualEstimate')}</label>
             <div className="flex flex-wrap gap-3">
               <input id="weight" type="number" min={0.1} step={0.1} value={manualWeight}
                 onChange={(e) => { setManualWeight(e.target.value); setAnalysis(null); }}
@@ -222,11 +224,11 @@ export default function SchedulePickup() {
                 onClick={() => fileRef.current?.click()}
                 className="btn-dark flex-1 sm:flex-none">
                 {analyzing ? <Loader2 size={15} className="animate-spin" /> : <BrainCircuit size={15} />}
-                Use AI Waste Estimator
+                {t('aiEstimator')}
               </button>
               <button type="button" disabled={analyzing || !cats.length}
                 onClick={() => void runAnalysis()} className="btn-ghost border border-neutral-200 text-[13px]">
-                <Sparkles size={14} /> No photo? Estimate anyway
+                <Sparkles size={14} /> {t('noPhoto')}
               </button>
               <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden"
                 onChange={(e) => {
@@ -327,9 +329,9 @@ export default function SchedulePickup() {
           )}
 
           <div className="flex justify-between">
-            <button type="button" onClick={() => setStep(0)} className="btn-ghost"><ArrowLeft size={15} /> Back</button>
+            <button type="button" onClick={() => setStep(0)} className="btn-ghost"><ArrowLeft size={15} /> {t('back')}</button>
             <button type="button" disabled={totalWeight <= 0} onClick={() => void findCollectors()} className="btn-primary">
-              Find Collector <ArrowRight size={15} />
+              {t('findCollector')} <ArrowRight size={15} />
             </button>
           </div>
         </section>
@@ -338,7 +340,7 @@ export default function SchedulePickup() {
       {/* STEP 3 — collector matching */}
       {step === 2 && (
         <section className="animate-fade-up" aria-label="Collector matching">
-          <h1 className="font-display text-2xl font-bold text-ink">Choose a collector</h1>
+          <h1 className="font-display text-2xl font-bold text-ink">{t('chooseCollector')}</h1>
           <p className="mt-1 text-[13.5px] text-ink-soft">Ranked by distance, availability, material match and rating.</p>
 
           <div className="mt-5"><DemoMap height={280} customer={user?.lat && user?.lng ? { lat: user.lat, lng: user.lng } : null} collectors={collectors || []} /></div>
@@ -385,15 +387,15 @@ export default function SchedulePickup() {
 
           {/* Address */}
           <div className="card mt-5 p-5">
-            <label htmlFor="addr" className="label">Pickup address</label>
+            <label htmlFor="addr" className="label">{t('pickupAddress')}</label>
             <textarea id="addr" rows={2} value={address} onChange={(e) => setAddress(e.target.value)}
               className="input" placeholder="House / street / landmark" />
           </div>
 
           <div className="mt-5 flex justify-between">
-            <button type="button" onClick={() => setStep(1)} className="btn-ghost"><ArrowLeft size={15} /> Back</button>
+            <button type="button" onClick={() => setStep(1)} className="btn-ghost"><ArrowLeft size={15} /> {t('back')}</button>
             <button type="button" disabled={!selectedCollector || creating} onClick={() => void submit()} className="btn-primary">
-              {creating ? 'Creating…' : 'Confirm Request'} <Check size={15} />
+              {creating ? '…' : t('confirmRequest')} <Check size={15} />
             </button>
           </div>
         </section>
