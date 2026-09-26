@@ -5,6 +5,8 @@ __pycache__/
 .venv/
 venv/
 .env
+.env.local
+.env*.local
 *.db
 *.sqlite
 backend/uploads/*
@@ -13,3 +15,5 @@ backend/uploads/*
 *.log
 .freebuff/
 frontend/dist/
+.neon
+.env.local
