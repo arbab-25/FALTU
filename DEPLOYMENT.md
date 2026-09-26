@@ -41,9 +41,9 @@ can drift out of sync. (The earlier two-service design is exactly what caused
    - The API auto-creates all tables on Neon and seeds 2,850 demo users +
      1,248 pickups in the background (check Logs for `Cloud database seeded`).
 5. Your ONE live URL (shown after deploy):
-   - App + API: `https://kabadiwala-sih.onrender.com`
-   - Diagnostics: `https://kabadiwala-sih.onrender.com/api/health`
-   - API docs: `https://kabadiwala-sih.onrender.com/api/docs`
+   - App + API: `https://faltu-sih26229.onrender.com`
+   - Diagnostics: `https://faltu-sih26229.onrender.com/api/health`
+   - API docs: `https://faltu-sih26229.onrender.com/api/docs`
 
 ## 4. Verify the deploy (30 seconds)
 

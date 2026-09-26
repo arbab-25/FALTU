@@ -10,12 +10,12 @@
 # Paste your Neon connection string when prompted for DATABASE_URL.
 #
 # After deploy, ONE URL does everything:
-#   https://kabadiwala-sih.onrender.com/            → the app
-#   https://kabadiwala-sih.onrender.com/api/health  → diagnostic fingerprint
+#   https://faltu-sih26229.onrender.com/            → the app
+#   https://faltu-sih26229.onrender.com/api/health  → diagnostic fingerprint
 
 services:
   - type: web
-    name: kabadiwala-sih
+    name: faltu-sih26229
     runtime: python
     plan: free
     buildCommand: |
